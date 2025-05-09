@@ -77,7 +77,7 @@ class MainPage : AppCompatActivity() {
     }
 
     private fun loadModelFile(): MappedByteBuffer {
-        val fileDescriptor: AssetFileDescriptor = assets.openFd("model_derma.tflite")
+        val fileDescriptor: AssetFileDescriptor = assets.openFd("new_model.tflite")
         val inputStream = fileDescriptor.createInputStream()
         val fileChannel = inputStream.channel
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, fileDescriptor.startOffset, fileDescriptor.declaredLength)
@@ -234,30 +234,13 @@ class MainPage : AppCompatActivity() {
 //
 //        )
         val conditionLabels = listOf(
-            "Acne or Rosacea",
-            "Actinic Keratosis, Basal Cell Carcinoma, or other Malignant Lesions",
-            "Atopic Dermatitis",
-            "Bullous Disease",
-            "Cellulitis, Impetigo, or other Bacterial Infections",
-            "Eczema",
-            "Exanthems or Drug Eruptions",
-            "Hair Loss, Alopecia, or other Hair Diseases",
-            "Herpes, HPV, or other STDs",
-            "Light Diseases or Pigmentation Disorders",
-            "Lupus or other Connective Tissue Diseases",
-            "Melanoma, Nevi, or Moles",
-            "Nail Fungus or other Nail Diseases",
-            "Normal",
-            "Poison Ivy or other Contact Dermatitis",
-            "Psoriasis, Lichen Planus, or related Diseases",
-            "Scabies, Lyme Disease, or other Infestations",
-            "Seborrheic Keratoses or other Benign Tumors",
-            "Systemic Disease",
-            "Tinea, Ringworm, Candidiasis, or other Fungal Infections",
-            "Urticaria (Hives)",
-            "Vascular Tumors",
-            "Vasculitis",
-            "Warts, Molluscum, or other Viral Infections"
+            "Acne",
+            "Ezcema",
+            "Melanoma",
+            "Psoriasis",
+            "Serborrheic Keratoses",
+            "Tinea Ringworm",
+            "Warts or Viral Infection"
         )
 
         return conditionLabels.getOrElse(index) { "Unknown" }
@@ -265,30 +248,13 @@ class MainPage : AppCompatActivity() {
 
     private fun getRemedy(condition: String): String {
         return when (condition) {
-            "Acne or Rosacea" -> "Cleanse gently, avoid triggers like spicy food and harsh products; use prescribed topical treatments."
-            "Actinic Keratosis, Basal Cell Carcinoma, or other Malignant Lesions" -> "Consult a dermatologist immediately for evaluation and possible surgical or topical treatment."
-            "Atopic Dermatitis" -> "Moisturize regularly, avoid allergens, and use prescribed anti-inflammatory creams."
-            "Bullous Disease" -> "Seek medical attention; treatment may include corticosteroids or immunosuppressants."
-            "Cellulitis, Impetigo, or other Bacterial Infections" -> "Use prescribed antibiotics and keep the area clean; seek medical care promptly."
-            "Eczema" -> "Keep skin moisturized, avoid irritants, and use topical steroids if prescribed."
-            "Exanthems or Drug Eruptions" -> "Discontinue suspected medications and consult a doctor immediately."
-            "Hair Loss, Alopecia, or other Hair Diseases" -> "Consult a dermatologist for diagnosis; treatments may include minoxidil or corticosteroids."
-            "Herpes, HPV, or other STDs" -> "Avoid contact during outbreaks; antiviral or topical treatments may be required."
-            "Light Diseases or Pigmentation Disorders" -> "Use broad-spectrum sunscreen and follow medical guidance for pigmentation treatments."
-            "Lupus or other Connective Tissue Diseases" -> "Seek specialist care; treatment may include immunosuppressive medications."
-            "Melanoma, Nevi, or Moles" -> "Monitor for asymmetry or changes; consult a dermatologist for any suspicious spots."
-            "Nail Fungus or other Nail Diseases" -> "Use antifungal treatments and keep nails clean and dry; consult a doctor if persistent."
-            "Normal" -> "No action needed. Maintain healthy skincare practices."
-            "Poison Ivy or other Contact Dermatitis" -> "Avoid contact with allergens, apply calamine lotion or topical steroids for relief."
-            "Psoriasis, Lichen Planus, or related Diseases" -> "Moisturize often and follow prescribed treatments like topical corticosteroids or phototherapy."
-            "Scabies, Lyme Disease, or other Infestations" -> "Use medicated creams like permethrin; wash clothing and linens thoroughly."
-            "Seborrheic Keratoses or other Benign Tumors" -> "Generally harmless; consult a dermatologist if removal is desired."
-            "Systemic Disease" -> "Requires thorough evaluation by a healthcare professional; follow tailored medical treatment."
-            "Tinea, Ringworm, Candidiasis, or other Fungal Infections" -> "Apply antifungal treatments and keep affected areas dry and clean."
-            "Urticaria (Hives)" -> "Take antihistamines and identify potential triggers; seek medical help if persistent."
-            "Vascular Tumors" -> "Often monitored over time; some may require medical or surgical treatment."
-            "Vasculitis" -> "Seek immediate medical care; treatment depends on severity and underlying cause."
-            "Warts, Molluscum, or other Viral Infections" -> "Avoid touching or scratching lesions; some cases resolve on their own, others need treatment."
+            "Acne" -> "Cleanse your face twice daily with a mild cleanser and apply over-the-counter benzoyl peroxide or salicylic acid products to reduce inflammation and bacteria."
+            "Ezcema" -> "Keep the skin moisturized with fragrance-free creams or ointments; apply a cool compress to relieve itching and avoid known irritants."
+            "Melanoma" -> "Seek immediate medical attention. Melanoma is a serious form of skin cancer and cannot be treated with home remedies."
+            "Psoriasis" -> " Apply aloe vera gel or a moisturizer with coal tar or salicylic acid; take short daily baths with oatmeal or Epsom salt to soothe itching."
+            "Serborrheic Keratoses" -> "These are generally harmless; however, moisturizers and gentle exfoliation may help reduce irritation. For removal, consult a dermatologist."
+            "Tinea Ringworm"->"Apply an over-the-counter antifungal cream (like clotrimazole or terbinafine) twice daily and keep the affected area clean and dry."
+            "Warts or Viral Infection" -> "Use salicylic acid treatments or cryotherapy products available over the counter. Avoid picking to prevent spreading the virus.      "
             else -> "No specific remedy found. Consult a dermatologist for diagnosis and treatment."
         }
 

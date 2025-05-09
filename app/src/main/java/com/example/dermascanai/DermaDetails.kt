@@ -45,6 +45,9 @@ class DermaDetails : AppCompatActivity() {
             intent.putExtra("doctorEmail", userEmail)
             startActivity(intent)
         }
+        binding.rateMe.setOnClickListener {
+            userEmail?.let { showRatingDialog(it) }
+        }
     }
 
     private fun fetchUserData(userEmail: String) {
@@ -107,4 +110,65 @@ class DermaDetails : AppCompatActivity() {
             }
         })
     }
+
+    private fun showRatingDialog(doctorEmail: String) {
+        val dialogBinding = com.example.dermascanai.databinding.DialogRateDoctorBinding.inflate(layoutInflater)
+
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Rate Doctor")
+            .setView(dialogBinding.root)
+            .setPositiveButton("Submit", null)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.setOnShowListener {
+            val submitBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+            submitBtn.setOnClickListener {
+                val rating = dialogBinding.ratingBar.rating.toInt()
+                val feedback = dialogBinding.feedbackInput.text.toString().trim()
+
+                if (rating == 0) {
+                    Toast.makeText(this, "Please select a rating.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val userId = mAuth.currentUser?.uid ?: return@setOnClickListener
+                val userRef = database.getReference("userInfo").child(userId)
+
+                userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val userName = snapshot.child("name").getValue(String::class.java) ?: "Anonymous"
+
+                        val ratingData = mapOf(
+                            "rating" to rating,
+                            "feedback" to feedback,
+                            "userId" to userId,
+                            "userName" to userName,
+                            "timestamp" to System.currentTimeMillis()
+                        )
+
+                        val safeDoctorKey = doctorEmail.replace(".", "_")
+                        val doctorRatingsRef = database.getReference("ratings").child(safeDoctorKey)
+
+                        doctorRatingsRef.push().setValue(ratingData).addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                Toast.makeText(this@DermaDetails, "Rating submitted!", Toast.LENGTH_SHORT).show()
+                                dialog.dismiss()
+                            } else {
+                                Toast.makeText(this@DermaDetails, "Failed to submit rating", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@DermaDetails, "Error fetching user name", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+        }
+
+        dialog.show()
+    }
+
+
 }
