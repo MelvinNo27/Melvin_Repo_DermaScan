@@ -26,8 +26,19 @@ import android.content.res.AssetFileDescriptor
 import android.media.ExifInterface
 import android.util.Base64
 import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.LinearLayout
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import com.example.dermascanai.Login
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,6 +60,19 @@ class MainPage : AppCompatActivity() {
 
     private var imageUri: Uri? = null
 
+    private var selectedImageBase64: String? = null
+    private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            val inputStream = contentResolver.openInputStream(it)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            selectedImageBase64 = encodeImageToBase64(bitmap)
+            selectedImageView?.setImageBitmap(bitmap)
+        }
+    }
+
+    private var selectedImageView: ImageView? = null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainPageBinding.inflate(layoutInflater)
@@ -66,6 +90,9 @@ class MainPage : AppCompatActivity() {
             Toast.makeText(this, "Model loading failed", Toast.LENGTH_LONG).show()
         }
 
+
+
+
         binding.scanButton.setOnClickListener {
             showImagePickerDialog()
         }
@@ -73,11 +100,29 @@ class MainPage : AppCompatActivity() {
         binding.backBTN.setOnClickListener {
             finish()
         }
+        val userId = firebase.currentUser?.uid ?: return
+        val roleRef = database.getReference("dermaInfo").child(userId).child("role")
+
+        roleRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val role = snapshot.getValue(String::class.java)
+                if (role == "derma") {
+                    binding.reportScan.visibility = View.VISIBLE
+                } else {
+                    binding.reportScan.visibility = View.GONE
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@MainPage, "Failed to load user role", Toast.LENGTH_SHORT).show()
+            }
+        })
+
 
     }
 
     private fun loadModelFile(): MappedByteBuffer {
-        val fileDescriptor: AssetFileDescriptor = assets.openFd("new_model.tflite")
+        val fileDescriptor: AssetFileDescriptor = assets.openFd("new_model2.tflite")
         val inputStream = fileDescriptor.createInputStream()
         val fileChannel = inputStream.channel
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, fileDescriptor.startOffset, fileDescriptor.declaredLength)
@@ -150,6 +195,9 @@ class MainPage : AppCompatActivity() {
                 }
 
 
+                binding.reportScan.setOnClickListener {
+                    showReportDialog()
+                }
 
                 hideProgress()
                 binding.detailBtn.visibility = View.VISIBLE
@@ -172,9 +220,103 @@ class MainPage : AppCompatActivity() {
 
                     saveScanResultToFirebase(condition, remedy, bitmap)
                 }
+
+
+
             }
         }
     }
+
+
+    private fun showReportDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Send Feedback to Admin")
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 40, 50, 10)
+        }
+
+        val input = EditText(this).apply {
+            hint = "Write your message or review here"
+        }
+
+        selectedImageView = ImageView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                500
+            )
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            visibility = View.GONE
+        }
+
+        val selectImageButton = Button(this).apply {
+            text = "Select Image"
+            setOnClickListener {
+                imagePickerLauncher.launch("image/*")
+                selectedImageView?.visibility = View.VISIBLE
+            }
+        }
+
+        layout.addView(input)
+        layout.addView(selectImageButton)
+        layout.addView(selectedImageView)
+
+        builder.setView(layout)
+
+        builder.setPositiveButton("Send") { dialog, _ ->
+            val message = input.text.toString()
+            if (message.isBlank()) {
+                Toast.makeText(this, "Please enter a message.", Toast.LENGTH_SHORT).show()
+            } else {
+                reportScan(message, selectedImageBase64)
+            }
+            dialog.dismiss()
+        }
+
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        builder.show()
+    }
+
+
+    private fun reportScan(userMessage: String, imageBase64: String?) {
+        val userId = firebase.currentUser?.uid ?: return
+        val userNameRef = database.getReference("dermaInfo").child(userId).child("name")
+
+        userNameRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val userName = snapshot.getValue(String::class.java) ?: "Unknown User"
+
+                val report = hashMapOf(
+                    "userId" to userId,
+                    "userName" to userName,
+                    "message" to userMessage,
+                    "imageBase64" to imageBase64,
+                    "timestamp" to System.currentTimeMillis()
+                )
+
+                val reportsRef = database.getReference("scanReports")
+                val newReportKey = reportsRef.push().key ?: return
+
+                reportsRef.child(newReportKey).setValue(report)
+                    .addOnSuccessListener {
+                        Toast.makeText(this@MainPage, "Report sent successfully!", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this@MainPage, "Failed to send report.", Toast.LENGTH_SHORT).show()
+                    }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@MainPage, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+
 
     private fun rotateImageIfNeeded(bitmap: Bitmap, uri: Uri?): Bitmap {
         val inputStream = contentResolver.openInputStream(uri!!)
@@ -204,7 +346,7 @@ class MainPage : AppCompatActivity() {
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
         val input = preprocessImage(resizedBitmap)
 
-        val output = Array(1) { FloatArray(7) }
+        val output = Array(1) { FloatArray(8) } //FloatArray(8) = number of datasets
         interpreter?.run(input, output)
 
         val maxIndex = output[0].indices.maxByOrNull { output[0][it] } ?: -1
@@ -237,6 +379,7 @@ class MainPage : AppCompatActivity() {
             "Acne",
             "Ezcema",
             "Melanoma",
+            "Normal",
             "Psoriasis",
             "Serborrheic Keratoses",
             "Tinea Ringworm",
@@ -251,6 +394,7 @@ class MainPage : AppCompatActivity() {
             "Acne" -> "Cleanse your face twice daily with a mild cleanser and apply over-the-counter benzoyl peroxide or salicylic acid products to reduce inflammation and bacteria."
             "Eczema" -> "Keep the skin moisturized with fragrance-free creams or ointments; apply a cool compress to relieve itching and avoid known irritants."
             "Melanoma" -> "Seek immediate medical attention. Melanoma is a serious form of skin cancer and cannot be treated with home remedies."
+            "Normal" -> "You have a Normal skin. Keep it Up."
             "Psoriasis" -> " Apply aloe vera gel or a moisturizer with coal tar or salicylic acid; take short daily baths with oatmeal or Epsom salt to soothe itching."
             "Serborrheic Keratoses" -> "These are generally harmless; however, moisturizers and gentle exfoliation may help reduce irritation. For removal, consult a dermatologist."
             "Tinea Ringworm"->"Apply an over-the-counter antifungal cream (like clotrimazole or terbinafine) twice daily and keep the affected area clean and dry."

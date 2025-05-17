@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,6 +31,8 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import android.Manifest
+
 
 
 class UserHomeFragment : Fragment() {
@@ -59,8 +62,16 @@ class UserHomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentHomeUserBinding.inflate(inflater, container, false)
+
+        ActivityCompat.requestPermissions(
+            requireActivity(),
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            1001
+        )
+
         return binding.root
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -135,6 +146,12 @@ class UserHomeFragment : Fragment() {
         } else {
             Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show()
         }
+
+        binding.btnOpenMap.setOnClickListener {
+            val mapDialog = MapPopupDialogFragment()
+            mapDialog.show(parentFragmentManager, "mapDialog")
+        }
+
 
         binding.notificationIcon.setOnClickListener {
             popupWindow.showAsDropDown(binding.notificationIcon, -100, 20)

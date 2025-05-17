@@ -9,6 +9,15 @@
     android:layout_height="match_parent"
     tools:context=".MainPage">
 
+    <ImageView
+        android:id="@+id/reportScan"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_margin="15dp"
+        android:src="@drawable/report_svgrepo_com"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/backBTN"
         android:layout_width="18dp"

@@ -22,6 +22,9 @@
             showHomeText()
             val fabCard = binding.fabCard
 
+
+
+
             binding.fabMain.bringToFront()
             binding.fabMain.translationZ = 16f
             binding.fabMain.elevation = 12f
@@ -208,3 +211,4 @@
         }
 
     }
+
