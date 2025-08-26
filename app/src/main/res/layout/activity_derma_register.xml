@@ -390,34 +390,7 @@
                 app:layout_constraintEnd_toEndOf="parent" />
 
             <!-- Terms and Conditions -->
-            <LinearLayout
-                android:id="@+id/termsContainer"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                app:layout_constraintTop_toBottomOf="@id/spinnerClinicCloseTime"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginBottom="24dp">
 
-                <CheckBox
-                    android:id="@+id/checkBox"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="I Accept the "
-                    android:textColor="@color/black" />
-
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/nav_terms"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clickable="true"
-                    android:text="Terms and Conditions"
-                    android:textColor="@color/blue"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
 
             <!-- Documents Upload Section -->
             <TextView
@@ -428,7 +401,7 @@
                 android:textColor="@color/black"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:layout_constraintTop_toBottomOf="@id/termsContainer"
+                app:layout_constraintTop_toBottomOf="@id/spinnerClinicCloseTime"
                 app:layout_constraintStart_toStartOf="parent" />
 
             <GridLayout
@@ -516,17 +489,46 @@
                 </LinearLayout>
             </GridLayout>
 
+            <LinearLayout
+                android:id="@+id/termsContainer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                app:layout_constraintTop_toBottomOf="@id/documentsGrid"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginBottom="24dp">
+
+                <CheckBox
+                    android:id="@+id/checkBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="I Accept the "
+                    android:textColor="@color/black" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/nav_terms"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:text="Terms and Conditions"
+                    android:textColor="@color/blue"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
             <!-- Submit Button -->
             <Button
                 android:id="@+id/submit"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:backgroundTint="@color/colorPrimary"
+                android:backgroundTint="@color/main_green"
                 android:text="Submit"
                 android:textColor="@android:color/white"
                 android:textAllCaps="false"
                 android:textSize="16sp"
-                app:layout_constraintTop_toBottomOf="@id/documentsGrid"
+                app:layout_constraintTop_toBottomOf="@id/termsContainer"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 

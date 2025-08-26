@@ -13,12 +13,23 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import com.example.dermascanai.databinding.ActivityDermaRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import org.mindrot.jbcrypt.BCrypt
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.util.Properties
+import javax.mail.Authenticator
+import javax.mail.Message
+import javax.mail.PasswordAuthentication
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
+
 
 class DermaRegister : AppCompatActivity() {
     private lateinit var binding: ActivityDermaRegisterBinding
@@ -38,6 +49,10 @@ class DermaRegister : AppCompatActivity() {
     private val REQUEST_BIR = 10
     private val REQUEST_BUSINESS_PERMIT = 11
     private val REQUEST_VALID_ID = 12
+
+    private val SMTP_USER = "rp0887955@gmail.com"     // <-- your Gmail
+    private val SMTP_PASS = "whknsnwbhxubpqkm"
+    private var cameraImageUri: Uri? = null
 
     private val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
     private val times = listOf(
@@ -141,7 +156,17 @@ class DermaRegister : AppCompatActivity() {
     }
 
     private fun openCameraIntent(requestCode: Int) {
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        val photoFile = File.createTempFile("IMG_", ".jpg", cacheDir)
+        cameraImageUri = FileProvider.getUriForFile(
+            this,
+            "com.example.dermascanai.fileprovider",  // same as in manifest
+            photoFile
+        )
+
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+            putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri)
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
         startActivityForResult(intent, requestCode)
     }
 
@@ -151,38 +176,78 @@ class DermaRegister : AppCompatActivity() {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
                 REQUEST_PROFILE_IMAGE -> {
-                    data?.data?.let { uri ->
-                        selectedProfileBitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-                        binding.profPic.setImageURI(uri)
-                    } ?: run {
-                        val photo = data?.extras?.get("data") as? Bitmap
-                        photo?.let {
-                            selectedProfileBitmap = it
-                            binding.profPic.setImageBitmap(it)
+                    val bitmap: Bitmap? = when {
+                        // Camera capture → we stored Uri in cameraImageUri
+                        cameraImageUri != null -> {
+                            BitmapFactory.decodeStream(contentResolver.openInputStream(cameraImageUri!!))
+                        }
+
+                        // Gallery pick → returns Uri in data.data
+                        data?.data != null -> {
+                            val uri = data.data
+                            BitmapFactory.decodeStream(contentResolver.openInputStream(uri!!))
+                        }
+
+                        // Fallback → some camera apps return a small Bitmap in extras
+                        else -> {
+                            data?.extras?.get("data") as? Bitmap
                         }
                     }
+
+                    bitmap?.let {
+                        selectedProfileBitmap = it
+                        binding.profPic.setImageBitmap(it)
+                    }
                 }
+
+
                 REQUEST_BIR -> {
-                    data?.data?.let { uri ->
-                        birBitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-                        binding.birImageView.setImageBitmap(birBitmap)
+                    val bitmap = if (cameraImageUri != null && data == null) {
+                        // Camera
+                        BitmapFactory.decodeStream(contentResolver.openInputStream(cameraImageUri!!))
+                    } else {
+                        // Gallery
+                        handleGalleryResult(data)
+                    }
+                    bitmap?.let {
+                        birBitmap = it
+                        binding.birImageView.setImageBitmap(it)
                     }
                 }
+
                 REQUEST_BUSINESS_PERMIT -> {
-                    data?.data?.let { uri ->
-                        businessPermitBitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-                        binding.businessPermitImageView.setImageBitmap(businessPermitBitmap)
+                    val bitmap = if (cameraImageUri != null && data == null) {
+                        BitmapFactory.decodeStream(contentResolver.openInputStream(cameraImageUri!!))
+                    } else {
+                        handleGalleryResult(data)
+                    }
+                    bitmap?.let {
+                        businessPermitBitmap = it
+                        binding.businessPermitImageView.setImageBitmap(it)
                     }
                 }
+
                 REQUEST_VALID_ID -> {
-                    data?.data?.let { uri ->
-                        validIdBitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-                        binding.validIdImageView.setImageBitmap(validIdBitmap)
+                    val bitmap = if (cameraImageUri != null && data == null) {
+                        BitmapFactory.decodeStream(contentResolver.openInputStream(cameraImageUri!!))
+                    } else {
+                        handleGalleryResult(data)
+                    }
+                    bitmap?.let {
+                        validIdBitmap = it
+                        binding.validIdImageView.setImageBitmap(it)
                     }
                 }
             }
         }
     }
+
+
+    private fun handleGalleryResult(data: Intent?): Bitmap? {
+        val uri = data?.data ?: return null
+        return MediaStore.Images.Media.getBitmap(contentResolver, uri)
+    }
+
 
     private fun validateInputs(): Boolean {
         if (binding.name.text.toString().trim().isEmpty() ||
@@ -227,17 +292,16 @@ class DermaRegister : AppCompatActivity() {
         val selectedCloseDay = binding.spinnerClinicCloseDay.selectedItem as? String ?: ""
         val selectedOpenTime = binding.spinnerClinicOpenTime.selectedItem as? String ?: ""
         val selectedCloseTime = binding.spinnerClinicCloseTime.selectedItem as? String ?: ""
+        val email = binding.email.text.toString().trim()
 
         val clinicInfo = ClinicInfo(
             name = binding.name.text.toString().trim(),
-            email = binding.email.text.toString().trim(),
+            email = email,
             role = "derma",
             contact = binding.phone.text.toString().trim(),
-
             clinicName = binding.clinicName.text.toString().trim(),
             clinicAddress = binding.clinicAddress.text.toString().trim(),
             clinicPhone = binding.clinicPhone.text.toString().trim(),
-
             clinicOpenDay = selectedOpenDay,
             clinicCloseDay = selectedCloseDay,
             clinicOpenTime = selectedOpenTime,
@@ -245,10 +309,7 @@ class DermaRegister : AppCompatActivity() {
             birImage = birEncoded,
             businessPermitImage = businessPermitEncoded,
             validIdImage = validIdEncoded,
-
             password = hashedPassword,
-
-            // For ClinicProfile
             logoImage = profileImageEncoded,
             birDocument = birEncoded,
             permitDocument = businessPermitEncoded,
@@ -264,32 +325,94 @@ class DermaRegister : AppCompatActivity() {
             dermatologists = emptyList()
         )
 
-        // Firebase Authentication and Database Save
-        mAuth.createUserWithEmailAndPassword(clinicInfo.email ?: "", plainPassword)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val uid = mAuth.currentUser?.uid
-                    if (uid != null) {
-                        FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                            .getReference("clinicInfo")
-                            .child(uid)
-                            .setValue(clinicInfo)
-                            .addOnSuccessListener {
-                                Toast.makeText(this, "Registration complete!", Toast.LENGTH_LONG).show()
-                                // ✅ Navigate to ClinicProfile
-                                val intent = Intent(this, Login::class.java)
-                                startActivity(intent)
-                                finish()
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(this, "Failed to save user data: ${it.message}", Toast.LENGTH_LONG).show()
-                            }
-                    }
-                } else {
-                    Toast.makeText(this, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+        // Generate OTP
+        val otp = sendOtpEmail(email)
+
+        // 🔑 Generate unique key for temporary storage
+        val pendingRef = FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            .getReference("pendingClinics")
+        val clinicKey = pendingRef.push().key ?: email.replace(".", "_")
+
+        // Save clinic info temporarily in Firebase
+        pendingRef.child(clinicKey).setValue(clinicInfo)
+            .addOnSuccessListener {
+                val intent = Intent(this, ClinicOTPAuth::class.java).apply {
+                    putExtra("CLINIC_KEY", clinicKey) // ✅ only send key
+                    putExtra("OTP", otp)
+                    putExtra("PLAIN_PASSWORD", plainPassword)
                 }
+                startActivity(intent)
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Error saving data: ${e.message}", Toast.LENGTH_LONG).show()
             }
     }
+
+
+    private fun sendOtpEmail(email: String): String {
+        val otp = (100000..999999).random().toString()
+        val subject = "🔐 Verify Your DermaScan Account"
+
+        val logoUrl = "https://imgur.com/a/BTNNzGi"
+
+        val htmlMessage = """
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f6f8; color: #333;">
+            <div style="max-width: 500px; margin: auto; background: #ffffff; border-radius: 10px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="$logoUrl" alt="DermaScan Logo" style="width: 120px; height: auto;">
+                </div>
+                <h2 style="text-align: center; color: #1976d2;">DermaScan Verification</h2>
+                <p style="font-size: 16px;">Hello 👋,</p>
+                <p style="font-size: 16px;">Use the OTP below to verify your account. This code will expire in <b>5 minutes</b>:</p>
+                <div style="text-align: center; margin: 20px 0;">
+                    <span style="font-size: 32px; font-weight: bold; color: #1976d2; letter-spacing: 5px;">$otp</span>
+                </div>
+                <p style="font-size: 14px; color: #777;">If you didn’t request this, please ignore this email.</p>
+                <hr style="margin: 20px 0;">
+                <p style="font-size: 12px; text-align: center; color: #999;">© 2025 DermaScan. All rights reserved.</p>
+            </div>
+        </div>
+    """.trimIndent()
+
+        val props = Properties().apply {
+            put("mail.smtp.auth", "true")
+            put("mail.smtp.starttls.enable", "true")
+            put("mail.smtp.host", "smtp.gmail.com")
+            put("mail.smtp.port", "587")
+        }
+
+        val session = Session.getInstance(props, object : Authenticator() {
+            override fun getPasswordAuthentication(): PasswordAuthentication {
+                return PasswordAuthentication(SMTP_USER, SMTP_PASS)
+            }
+        })
+
+        Thread {
+            try {
+                val mimeMessage = MimeMessage(session).apply {
+                    setFrom(InternetAddress(SMTP_USER, "DermaScan AI"))
+                    setRecipients(Message.RecipientType.TO, InternetAddress.parse(email))
+                    this.subject = subject
+                    setContent(htmlMessage, "text/html; charset=utf-8")
+                }
+
+                Transport.send(mimeMessage)
+
+                runOnUiThread {
+                    Toast.makeText(this, "OTP sent successfully ✅", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                runOnUiThread {
+                    Toast.makeText(this, "Failed to send OTP: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }.start()
+
+        return otp
+    }
+
+
 
     private fun encodeImageToBase64(bitmap: Bitmap): String {
         val outputStream = ByteArrayOutputStream()

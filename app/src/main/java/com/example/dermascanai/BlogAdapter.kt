@@ -1,5 +1,6 @@
 package com.example.dermascanai
 
+import android.app.AlertDialog
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.icu.text.SimpleDateFormat
@@ -69,6 +70,65 @@ class BlogAdapter(
 //            } else {
 //                holder.binding.imagePost.visibility = View.GONE
 //            }
+
+        holder.binding.option.setOnClickListener { view ->
+            val popup = android.widget.PopupMenu(view.context, view)
+            popup.inflate(R.menu.post_options_menu)
+
+            // Show delete if it's the current user’s post
+            if (post.userId == currentUserId) {
+                popup.menu.findItem(R.id.action_delete).isVisible = true
+                popup.menu.findItem(R.id.action_hide).isVisible = false
+            } else {
+                popup.menu.findItem(R.id.action_delete).isVisible = false
+                popup.menu.findItem(R.id.action_hide).isVisible = true
+            }
+
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_delete -> {
+                        AlertDialog.Builder(view.context)
+                            .setTitle("Delete Post")
+                            .setMessage("Are you sure you want to delete this post?")
+                            .setPositiveButton("Delete") { _, _ ->
+                                firebaseInstance.getReference("blogPosts")
+                                    .child(post.postId)
+                                    .removeValue()
+                                    .addOnSuccessListener {
+                                        Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
+                                    }
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                        true
+                    }
+
+                    R.id.action_hide -> {
+                        AlertDialog.Builder(view.context)
+                            .setTitle("Hide Post")
+                            .setMessage("Are you sure you want to hide this post?")
+                            .setPositiveButton("Hide") { _, _ ->
+                                firebaseInstance.getReference("hiddenPosts")
+                                    .child(currentUserId)
+                                    .child(post.postId)
+                                    .setValue(true)
+                                    .addOnSuccessListener {
+                                        Toast.makeText(context, "Post hidden", Toast.LENGTH_SHORT).show()
+                                    }
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+
+            popup.show()
+        }
+
+
 
         holder.binding.heartCount.text = post.likeCount.toString()
         holder.binding.commentSection.text = "${post.commentCount} Response(s)"
@@ -234,6 +294,7 @@ class BlogAdapter(
                 override fun onCancelled(error: DatabaseError) {}
             })
     }
+
 
     private fun updateCommentCount(post: BlogPost, holder: BlogViewHolder) {
         val blogRef = firebaseInstance.getReference("blogPosts").child(post.postId)

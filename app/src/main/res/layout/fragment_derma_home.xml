@@ -268,6 +268,26 @@
                 </androidx.cardview.widget.CardView>
 
                 <TextView
+                    android:id="@+id/random"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:text="My Reviews:"
+                    android:layout_margin="15dp"
+                    app:layout_constraintTop_toBottomOf="@+id/cardView11"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:padding="8dp"
+                    tools:listitem="@layout/item_review"
+                    app:layout_constraintTop_toBottomOf="@+id/random"
+                    />
+
+
+                <TextView
                     android:id="@+id/textView45"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -277,7 +297,7 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cardView11" />
+                    app:layout_constraintTop_toBottomOf="@+id/recyclerView" />
 
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
@@ -365,22 +385,12 @@
 
         </androidx.cardview.widget.CardView>
 
-
-
-
-
-
-
         <androidx.constraintlayout.widget.Barrier
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:barrierDirection="top"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
-
-
-
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

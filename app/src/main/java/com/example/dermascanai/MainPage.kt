@@ -35,8 +35,6 @@ import android.widget.LinearLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.dermascanai.Login
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -50,25 +48,30 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.segmentation.Segmentation
-import com.google.mlkit.vision.segmentation.selfie.SelfieSegmenterOptions
-import kotlinx.coroutines.tasks.await
+import com.example.dermascanai.ml.AIv5
+import org.json.JSONArray
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import showWarningDialog
+import java.io.FileInputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 
 class MainPage : AppCompatActivity() {
     private lateinit var binding: ActivityMainPageBinding
     private lateinit var firebase: FirebaseAuth
     private lateinit var database: FirebaseDatabase
-    private var interpreter: Interpreter? = null
-
+//    private var interpreter: Interpreter? = null
 
     private val PERMISSION_REQUEST_CODE = 1001
     private val PICK_IMAGE_REQUEST = 1002
     private val CAMERA_REQUEST = 1003
 
     private var imageUri: Uri? = null
+
+    private lateinit var model: AIv5
+    private lateinit var conditionLabels: List<String>
 
     private var selectedImageBase64: String? = null
     private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -98,26 +101,43 @@ class MainPage : AppCompatActivity() {
         databaseA = FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/")
             .getReference("clinicInfo")
 
+
         loadClinicsFromFirebase()
         checkPermissions()
 
         try {
-            interpreter = Interpreter(loadModelFile())
-        } catch (e: IOException) {
-            e.printStackTrace()
-            Toast.makeText(this, "Model loading failed", Toast.LENGTH_LONG).show()
+            model = AIv5.newInstance(this)
+        } catch (e: Exception) {
+            Log.e("MainPage", "Model load failed", e)
+            Toast.makeText(this, "Model load failed: ${e.message}", Toast.LENGTH_LONG).show()
         }
 
-//        clinicList.add(
-//            ClinicInfo(
-//                clinicName = "Wellness Clinic",
-//                email = "wellness@email.com",
-//                clinicPhone = "09251234567",
-//                address = "Manila, Philippines",
-//                profileImage = null // or your Base64 string
+//        try {
+//            val tfliteModel = org.tensorflow.lite.support.common.FileUtil.loadMappedFile(
+//                this,
+//                "dermascan21_float16.tflite"
 //            )
-//        )
+//
+//            val options = Interpreter.Options().apply {
+//                setNumThreads(2) // try 2 threads to reduce memory pressure
+//                setUseNNAPI(true) // delegate to NNAPI if available
+//            }
+//
+//            interpreter = Interpreter(tfliteModel, options)
+//
+//        } catch (e: Exception) {
+//            Log.e("MainPage", "Model load failed", e)
+//            Toast.makeText(this, "Model load failed: ${e.message}", Toast.LENGTH_LONG).show()
+//        }
 
+
+        try {
+            conditionLabels = loadConditionLabels()
+        } catch (e: IOException) {
+            Log.e("MainPage", "Error loading labels", e)
+            Toast.makeText(this, "Failed to load labels: ${e.message}", Toast.LENGTH_LONG).show()
+            conditionLabels = emptyList()
+        }
 
         showWarningDialog(this)
 
@@ -207,10 +227,16 @@ class MainPage : AppCompatActivity() {
 
 
     private fun loadModelFile(): MappedByteBuffer {
-        val fileDescriptor: AssetFileDescriptor = assets.openFd("ModelAI2.tflite")
-        val inputStream = fileDescriptor.createInputStream()
-        val fileChannel = inputStream.channel
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, fileDescriptor.startOffset, fileDescriptor.declaredLength)
+        assets.openFd("dermascan21_float16.tflite").use { fileDescriptor ->
+            FileInputStream(fileDescriptor.fileDescriptor).use { inputStream ->
+                val fileChannel = inputStream.channel
+                return fileChannel.map(
+                    FileChannel.MapMode.READ_ONLY,
+                    fileDescriptor.startOffset,
+                    fileDescriptor.declaredLength
+                )
+            }
+        }
     }
 
     private fun checkPermissions() {
@@ -264,30 +290,16 @@ class MainPage : AppCompatActivity() {
                     imageUri = data?.data
                     MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
                 }
-                CAMERA_REQUEST -> {
-                    BitmapFactory.decodeStream(contentResolver.openInputStream(imageUri!!))
-                }
+                CAMERA_REQUEST -> BitmapFactory.decodeStream(contentResolver.openInputStream(imageUri!!))
                 else -> return
             }
 
             CoroutineScope(Dispatchers.Main).launch {
                 showProgress()
 
-                val result = withContext(Dispatchers.IO) {
-                    val rotatedBitmap = rotateImageIfNeeded(bitmap, imageUri)
-                    val predictionResult = predict(rotatedBitmap)
-                    predictionResult
-                }
-
-//                val rotatedBitmap = rotateImageIfNeeded(bitmap, imageUri)
-//                val predictionResult = segmentAndPredict(rotatedBitmap)
-//
-//                if (predictionResult == null) {
-//                    Toast.makeText(this@MainPage, "No skin detected in image.", Toast.LENGTH_LONG).show()
-//                    hideProgress()
-//                    return@launch
-//                }
-
+                val rotatedBitmap = rotateImageIfNeeded(bitmap, imageUri)
+                val result = predict(rotatedBitmap)
+                val diseaseName = result.substringBeforeLast(" (").trim()
 
 
                 binding.reportScan.setOnClickListener {
@@ -297,16 +309,24 @@ class MainPage : AppCompatActivity() {
                 hideProgress()
 //                val result = predictionResult
                 binding.detailBtn.visibility = View.VISIBLE
-                binding.skinImageView.setImageBitmap(bitmap)
+                binding.skinImageView.setImageBitmap(rotatedBitmap)
                 binding.resultTextView.text = "You might have $result"
-                binding.remedyTextView.text = getRemedy(result)
+                binding.remedyTextView.text = getRemedy(diseaseName)
 
                 binding.detailBtn.setOnClickListener {
+                    // Get only the disease name (before the "(" )
+                    val baos = ByteArrayOutputStream()
+                    rotatedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+                    val byteArray = baos.toByteArray()
+                    val imageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT)
+                    val diseaseName = result.substringBeforeLast(" (").trim()
+
                     val intent = Intent(this@MainPage, DiseaseDetails::class.java)
-                    intent.putExtra("condition", result)
-                    intent.putExtra("image", selectedImageBase64)
+                    intent.putExtra("condition", diseaseName)   // only "Acne"
+                    intent.putExtra("image", imageBase64) // still sending image
                     startActivity(intent)
                 }
+
                 binding.saveScanButton.visibility = View.VISIBLE
                 binding.nerbyClinic.visibility = View.VISIBLE
                 binding.textClinic.visibility = View.VISIBLE
@@ -458,21 +478,112 @@ class MainPage : AppCompatActivity() {
         return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
     }
 
-    private fun predict(bitmap: Bitmap): String {
-        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
-        val input = preprocessImage(resizedBitmap)
+    private fun loadLabels(): List<String> {
+        val labels = mutableListOf<String>()
+        val inputStream = assets.open("labels.json")
+        val json = inputStream.bufferedReader().use { it.readText() }
+        val jsonObject = org.json.JSONObject(json)
 
-        val output = Array(1) { FloatArray(15) } //FloatArray(7) = number of datasets
-        interpreter?.run(input, output)
-
-        val maxIndex = output[0].indices.maxByOrNull { output[0][it] } ?: -1
-        return if (maxIndex != -1) getConditionLabel(maxIndex) else "Unknown"
+        for (i in 0 until jsonObject.length()) {
+            labels.add(jsonObject.getString(i.toString()))
+        }
+        return labels
     }
 
+//    private val conditionLabels: List<String> by lazy { loadLabels() }
+//
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        try {
+//            interpreter?.close()
+//            interpreter = null
+//        } catch (e: Exception) {
+//            Log.e("MainPage", "Error closing interpreter", e)
+//        }
+//    }
+
+
+    private fun predict(bitmap: Bitmap): String {
+        // Resize to 300x300
+        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 300, 300, true)
+
+        // Convert bitmap to normalized ByteBuffer
+        val byteBuffer = ByteBuffer.allocateDirect(4 * 1 * 300 * 300 * 3)
+        byteBuffer.order(ByteOrder.nativeOrder())
+
+        for (y in 0 until 300) {
+            for (x in 0 until 300) {
+                val pixel = resizedBitmap.getPixel(x, y)
+
+                // Normalize to [0,1] just like ImageDataGenerator(rescale=1./255)
+                val r = (pixel shr 16 and 0xFF) / 255.0f
+                val g = (pixel shr 8 and 0xFF) / 255.0f
+                val b = (pixel and 0xFF) / 255.0f
+
+                byteBuffer.putFloat(r)
+                byteBuffer.putFloat(g)
+                byteBuffer.putFloat(b)
+            }
+        }
+
+        // Prepare Tensor input
+        val input = TensorBuffer.createFixedSize(intArrayOf(1, 300, 300, 3), DataType.FLOAT32)
+        input.loadBuffer(byteBuffer)
+
+        // Run inference
+        val outputs = model.process(input)
+        val outputTensor = outputs.outputFeature0AsTensorBuffer
+        val resultArray = outputTensor.floatArray
+
+        // Find the highest confidence class
+        val maxIndex = resultArray.indices.maxByOrNull { resultArray[it] } ?: -1
+        val confidence = if (maxIndex != -1) resultArray[maxIndex] * 100 else 0f
+
+        return if (maxIndex != -1 && maxIndex < conditionLabels.size) {
+            // Show like: "You might have Acne (82.45%)"
+            "${conditionLabels[maxIndex]} (%.2f%%)".format(confidence)
+        } else {
+            "Unknown condition"
+        }
+    }
+
+
+    private fun loadConditionLabels(): List<String> {
+        val inputStream = assets.open("labels.json")
+        val jsonString = inputStream.bufferedReader().use { it.readText() }
+        val jsonArray = JSONArray(jsonString)
+
+        val labels = mutableListOf<String>()
+        for (i in 0 until jsonArray.length()) {
+            labels.add(jsonArray.getString(i))
+        }
+        return labels
+    }
+
+    private fun bitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
+        val byteBuffer = ByteBuffer.allocateDirect(4 * 300 * 300 * 3)
+        byteBuffer.order(ByteOrder.nativeOrder())
+
+        val intValues = IntArray(300 * 300)
+        bitmap.getPixels(intValues, 0, 300, 0, 0, 300, 300)
+
+        var pixelIndex = 0
+        for (i in 0 until 300) {
+            for (j in 0 until 300) {
+                val pixel = intValues[pixelIndex++]
+                byteBuffer.putFloat(((pixel shr 16) and 0xFF) / 255f) // R
+                byteBuffer.putFloat(((pixel shr 8) and 0xFF) / 255f)  // G
+                byteBuffer.putFloat((pixel and 0xFF) / 255f)          // B
+            }
+        }
+        return byteBuffer
+    }
+
+
     private fun preprocessImage(bitmap: Bitmap): Array<Array<Array<FloatArray>>> {
-        val result = Array(1) { Array(224) { Array(224) { FloatArray(3) } } }
-        for (i in 0 until 224) {
-            for (j in 0 until 224) {
+        val result = Array(1) { Array(300) { Array(300) { FloatArray(3) } } }  // <-- updated
+        for (i in 0 until 300) {
+            for (j in 0 until 300) {
                 val pixel = bitmap.getPixel(i, j)
                 result[0][i][j][0] = Color.red(pixel) / 255.0f
                 result[0][i][j][1] = Color.green(pixel) / 255.0f
@@ -482,25 +593,9 @@ class MainPage : AppCompatActivity() {
         return result
     }
 
-    private fun getConditionLabel(index: Int): String {
-//        val conditionLabels = listOf(
-//            "Acne", "Actinic Keratosis", "Atopic Dermatitis", "Basal Cell Carcinoma",
-//            "Benign Keratosis", "Cellulitis", "Dermatofibroma", "Eczema", "Hemangioma",
-//            "Herpes", "Impetigo", "Lichen Planus", "Melanoma", "Molluscum Contagiosum",
-//            "Nevus (Mole)", "Psoriasis", "Rosacea", "Scabies", "Seborrheic Keratosis",
-//            "Shingles (Herpes Zoster)", "Tinea (Ringworm)", "Urticaria (Hives)", "Vitiligo"
-//
-//        )
-        val conditionLabels = listOf(
-//            "Acne",
-//            "Ezcema",
-//            "Melanoma",
-////            "Normal",
-//            "Psoriasis",
-//            "Serborrheic Keratoses",
-//            "Tinea Ringworm",
-//            "Warts or Viral Infection"
 
+    private fun getConditionLabel(index: Int): String {
+        val conditionLabels = listOf(
             "Acne",
             "Actinic Keratosis (AK)",
             "Basal Cell Carcinoma (BCC)",
@@ -517,22 +612,12 @@ class MainPage : AppCompatActivity() {
             "Tinea or Ringworm",
             "Warts (Verruca, Viral Infection)"
         )
-
         return conditionLabels.getOrElse(index) { "Unknown" }
     }
 
+
     private fun getRemedy(condition: String): String {
         return when (condition) {
-//            "Acne" -> "Cleanse your face twice daily with a mild cleanser and apply over-the-counter benzoyl peroxide or salicylic acid products to reduce inflammation and bacteria."
-//            "Eczema" -> "Keep the skin moisturized with fragrance-free creams or ointments; apply a cool compress to relieve itching and avoid known irritants."
-//            "Melanoma" -> "Seek immediate medical attention. Melanoma is a serious form of skin cancer and cannot be treated with home remedies."
-////            "Normal" -> "You have a Normal skin. Keep it Up."
-//            "Psoriasis" -> " Apply aloe vera gel or a moisturizer with coal tar or salicylic acid; take short daily baths with oatmeal or Epsom salt to soothe itching."
-//            "Serborrheic Keratoses" -> "These are generally harmless; however, moisturizers and gentle exfoliation may help reduce irritation. For removal, consult a dermatologist."
-//            "Tinea Ringworm"->"Apply an over-the-counter antifungal cream (like clotrimazole or terbinafine) twice daily and keep the affected area clean and dry."
-//            "Warts or Viral Infection" -> "Use salicylic acid treatments or cryotherapy products available over the counter. Avoid picking to prevent spreading the virus.      "
-//            else -> "No specific remedy found. Consult a dermatologist for diagnosis and treatment."
-
 
             "Acne" -> "Cleanse your face twice daily with a mild cleanser and apply over-the-counter benzoyl peroxide or salicylic acid products to reduce inflammation and bacteria."
             "Actinic Keratosis (AK)" -> "Apply sunscreen regularly, avoid excessive sun exposure, and see a dermatologist for possible cryotherapy or prescription treatments."
@@ -553,44 +638,6 @@ class MainPage : AppCompatActivity() {
         }
 
     }
-
-//    private fun convertToHSV(bitmap: Bitmap, hsvBitmap: Bitmap) {
-//        for (x in 0 until bitmap.width) {
-//            for (y in 0 until bitmap.height) {
-//                val pixel = bitmap.getPixel(x, y)
-//                val hsv = FloatArray(3)
-//                Color.colorToHSV(pixel, hsv)
-//                hsvBitmap.setPixel(x, y, Color.HSVToColor(hsv))
-//            }
-//        }
-//    }
-//
-//    private fun applySkinColorMask(hsvBitmap: Bitmap): Bitmap {
-//        val width = hsvBitmap.width
-//        val height = hsvBitmap.height
-//        val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-//
-//        for (x in 0 until width) {
-//            for (y in 0 until height) {
-//                val pixel = hsvBitmap.getPixel(x, y)
-//                val hsv = FloatArray(3)
-//                Color.colorToHSV(pixel, hsv)
-//
-//                val h = hsv[0]
-//                val s = hsv[1]
-//                val v = hsv[2]
-//
-//                if (h in 0f..50f && s >= 0.23f && s <= 0.68f && v >= 0.35f && v <= 1f) {
-//                    resultBitmap.setPixel(x, y, Color.WHITE)
-//                } else {
-//                    resultBitmap.setPixel(x, y, Color.BLACK)
-//                }
-//            }
-//        }
-//
-//        return resultBitmap
-//    }
-
 
     private fun saveScanResultToFirebase(condition: String, remedy: String, bitmap: Bitmap) {
         val databaseReference = FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/").reference
@@ -624,6 +671,20 @@ class MainPage : AppCompatActivity() {
         return android.util.Base64.encodeToString(byteArray, Base64.DEFAULT)
     }
 
+    private fun uriToBitmap(uri: Uri): Bitmap {
+        val inputStream = contentResolver.openInputStream(uri)
+        return BitmapFactory.decodeStream(inputStream)!!
+    }
+
+    // ✅ Cleanup model
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            model.close()
+        } catch (e: Exception) {
+            Log.e("MainPage", "Error closing model", e)
+        }
+    }
 
 
     private fun showProgress() {
@@ -633,49 +694,5 @@ class MainPage : AppCompatActivity() {
     private fun hideProgress() {
         binding.loadingProgressBar.visibility = View.GONE
     }
-
-    private suspend fun segmentAndPredict(bitmap: Bitmap): String? {
-        return withContext(Dispatchers.IO) {
-            try {
-                // Resize the bitmap for better ML performance
-                val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 256, 256, true)
-
-                val inputImage = InputImage.fromBitmap(resizedBitmap, 0)
-
-                val options = SelfieSegmenterOptions.Builder()
-                    .setDetectorMode(SelfieSegmenterOptions.SINGLE_IMAGE_MODE)
-                    .enableRawSizeMask()
-                    .build()
-
-                val segmenter = Segmentation.getClient(options)
-                val result = segmenter.process(inputImage).await()
-
-                val mask = result.buffer
-                val width = result.width
-                val height = result.height
-
-                val maskArray = FloatArray(width * height)
-                mask.rewind()
-                mask.asFloatBuffer().get(maskArray)
-
-                val skinPixels = maskArray.count { it > 0.5f }
-                val skinRatio = skinPixels.toFloat() / maskArray.size
-
-                Log.d("SegmentationDebug", "Skin Ratio: $skinRatio, Pixels: $skinPixels")
-                Log.d("SegmentationDebug", "Mask sample: ${maskArray.take(20)}")
-
-                if (skinRatio < 0.05f) {
-                    return@withContext null
-                }
-
-                return@withContext predict(resizedBitmap)
-
-            } catch (e: Exception) {
-                Log.e("SegmentationError", "Error in segmentAndPredict", e)
-                return@withContext null
-            }
-        }
-    }
-
 
 }

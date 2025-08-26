@@ -19,6 +19,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.dermascanai.RatingView
 import com.example.dermascanai.databinding.FragmentDermaHomeBinding
 import com.example.dermascanai.databinding.LayoutNotificationPopupBinding
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -26,6 +27,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.api.model.Review
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.prolificinteractive.materialcalendarview.CalendarDay
@@ -48,6 +50,9 @@ class DermaHomeFragment : Fragment() {
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var googleMap: GoogleMap
     private val confirmedDates = HashSet<CalendarDay>()
+    private lateinit var ratingsRef: DatabaseReference
+    private val feedbackList = mutableListOf<RatingModel>()
+    private lateinit var adapter: RatingsAdapter
 
 
 //    private val notificationRef = FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/")
@@ -70,8 +75,14 @@ class DermaHomeFragment : Fragment() {
 
         val drawerLayout = binding.drawerLayout
         val navView = binding.navigationView
+        adapter = RatingsAdapter(feedbackList)
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.adapter = adapter
         database = FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/")
         mAuth = FirebaseAuth.getInstance()
+        val clinicId =  mAuth.currentUser?.uid
+
+        ratingsRef = database.getReference("ratings").child(clinicId.toString())
 
         val headerView = navView.getHeaderView(0)
         val closeDrawerBtn = headerView.findViewById<ImageView>(R.id.closeDrawerBtn)
@@ -168,11 +179,123 @@ class DermaHomeFragment : Fragment() {
         fetchUserData()
         loadFeaturedClinic() // Load a random featured clinic on start
 
+        ratingsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                feedbackList.clear()
+                val usersRef = database.getReference("userInfo")
 
+                val tempList = mutableListOf<RatingModel>()
+                var remaining = snapshot.childrenCount
+
+                for (userSnapshot in snapshot.children) {
+                    val userId = userSnapshot.key ?: continue
+                    val message = userSnapshot.child("message").getValue(String::class.java) ?: ""
+                    val rating = userSnapshot.child("rating").getValue(Float::class.java) ?: 0f
+                    val timestamp = userSnapshot.child("timestamp").getValue(Long::class.java) ?: 0L
+
+                    val ratingModel = RatingModel(rating, message, timestamp, userId)
+
+                    usersRef.child(userId).child("name").addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(userSnap: DataSnapshot) {
+                            ratingModel.userName = userSnap.getValue(String::class.java) ?: "Anonymous"
+                            tempList.add(ratingModel)
+                            remaining--
+
+                            if (remaining == 0L) {
+                                feedbackList.clear()
+                                feedbackList.addAll(tempList)
+                                adapter.notifyDataSetChanged()
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            remaining--
+                            if (remaining == 0L) {
+                                feedbackList.clear()
+                                feedbackList.addAll(tempList)
+                                adapter.notifyDataSetChanged()
+                            }
+                        }
+                    })
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+//                Toast.makeText(this@DermaHomeFragment, "Failed: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
 
 
 
     }
+
+    private fun loadReviewsForCurrentClinic(adapter: ReviewsAdapter) {
+        val currentClinicId = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (currentClinicId == null) {
+            Toast.makeText(context, "Not logged in", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val dbUrl = "https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        val ratingsRef = FirebaseDatabase.getInstance(dbUrl)
+            .getReference("ratings")
+            .child(currentClinicId)
+
+        val usersRef = FirebaseDatabase.getInstance(dbUrl).getReference("userInfo")
+
+        ratingsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val reviews = mutableListOf<RatingModel>()
+                val totalChildren = snapshot.childrenCount
+                var processed = 0
+
+                if (totalChildren == 0L) {
+                    adapter.submitList(emptyList())
+                    return
+                }
+
+                for (reviewSnap in snapshot.children) {
+                    val message = reviewSnap.child("message").getValue(String::class.java) ?: ""
+                    val rating = reviewSnap.child("rating").getValue(Float::class.java) ?: 0f
+                    val timestamp = reviewSnap.child("timestamp").getValue(Long::class.java) ?: 0
+                    val userId = reviewSnap.key ?: ""
+
+                    // fetch reviewer details
+                    usersRef.child(userId).get().addOnSuccessListener { userSnap ->
+                        val reviewerName = userSnap.child("fullName").getValue(String::class.java) ?: "Anonymous"
+                        val reviewerPhoto = userSnap.child("profileImage").getValue(String::class.java)
+
+
+                        reviews.add(
+                            RatingModel(
+                                message = message,
+                                rating = rating,
+                                timestamp = timestamp,
+                                userName = reviewerName,
+                                reviewerPhoto = reviewerPhoto,
+                                userId = userId
+                            )
+                        )
+
+                        processed++
+                        if (processed == totalChildren.toInt()) {
+                            // update once when all lookups are done
+                            reviews.sortByDescending { it.timestamp }
+                            adapter.submitList(reviews.toList())
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "Failed to load reviews", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+
+
 
     private fun loadFeaturedClinic() {
         val clinicRef = database.getReference("clinicInfo")

@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:padding="15dp"
+        android:padding="5dp"
         android:text="⚠️ Important: Before trying any remedies or treatments, please consult a licensed dermatologist."
         android:textColor="@android:color/holo_red_dark"
         android:textSize="14sp"
@@ -49,7 +49,7 @@
         android:id="@+id/textView39"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="or"
+        android:text="Try"
         android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -64,7 +64,7 @@
         android:textStyle="bold"
         android:textSize="14sp"
         android:clickable="true"
-        android:layout_margin="10dp"
+        android:layout_margin="5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView39" />
@@ -91,13 +91,15 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:gravity="center"
+                android:background="@color/grey"
                 android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/dataImg"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:layout_marginStart="15dp" />
+                    android:padding="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                   />
             </LinearLayout>
 
             <TextView

@@ -36,6 +36,11 @@ class RatingView : AppCompatActivity() {
 
         ratingsRef = database.getReference("ratings").child(clinicId)
 
+
+        binding.backBtn.setOnClickListener {
+            finish()
+        }
+
         ratingsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 feedbackList.clear()

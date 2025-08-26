@@ -57,7 +57,7 @@
             android:id="@+id/profPic"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
+            android:scaleType="fitCenter"
             android:src="@drawable/default_profile" />
     </androidx.cardview.widget.CardView>
 
@@ -78,11 +78,11 @@
         android:id="@+id/imageView7"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:src="@drawable/ic_calendar"
-        android:layout_marginStart="15dp"
         android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:src="@drawable/ic_calendar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ClinicName" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout4" />
 
 
     <TextView
@@ -97,26 +97,38 @@
         app:layout_constraintStart_toEndOf="@+id/imageView7"
         app:layout_constraintTop_toTopOf="@+id/imageView7" />
 
-    <TextView
-        android:id="@+id/time"
+    <LinearLayout
+        android:id="@+id/linearLayout4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="11:00am - 12:00pm"
-        android:layout_marginEnd="15dp"
-        android:textSize="12sp"
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="@+id/date"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/date" />
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="@+id/ClinicName"
+        app:layout_constraintStart_toStartOf="@+id/ClinicName"
+        app:layout_constraintTop_toBottomOf="@+id/ClinicName">
 
-    <ImageView
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:src="@drawable/ic_clock"
-        android:layout_marginEnd="5dp"
-        app:layout_constraintBottom_toBottomOf="@+id/time"
-        app:layout_constraintEnd_toStartOf="@+id/time"
-        app:layout_constraintTop_toTopOf="@+id/time" />
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginEnd="5dp"
+            android:src="@drawable/ic_clock"
+            app:layout_constraintBottom_toBottomOf="@+id/time"
+            app:layout_constraintEnd_toStartOf="@+id/time"
+            app:layout_constraintTop_toTopOf="@+id/time" />
+
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:text="11:00am - 12:00pm"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="@+id/date"
+            app:layout_constraintEnd_toEndOf="@+id/cardView8"
+            app:layout_constraintStart_toStartOf="@+id/cardView8"
+            app:layout_constraintTop_toBottomOf="@+id/ClinicName" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/serviceText"
@@ -125,10 +137,8 @@
         android:layout_marginTop="15dp"
         android:text="Service"
         android:textSize="16sp"
-        android:layout_marginEnd="15dp"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        app:layout_constraintTop_toBottomOf="@+id/time" />
+        app:layout_constraintStart_toStartOf="@+id/imageView7"
+        app:layout_constraintTop_toBottomOf="@+id/date" />
 
 
     <TextView
@@ -141,7 +151,7 @@
         android:textColor="@color/black"
         android:textSize="15sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/date" />
+        app:layout_constraintTop_toBottomOf="@+id/serviceText" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"

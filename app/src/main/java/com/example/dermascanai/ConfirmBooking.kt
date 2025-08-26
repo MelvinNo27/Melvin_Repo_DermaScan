@@ -136,6 +136,7 @@ class ConfirmBooking : AppCompatActivity() {
                                         val decodedBytes = Base64.decode(it, Base64.DEFAULT)
                                         val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
                                         binding.profPic.setImageBitmap(bitmap)
+                                        binding.time.text = dermaInfo.clinicOpenTime +" - "+ dermaInfo.clinicCloseTime + " : " + dermaInfo.clinicOpenDay +" - "+ dermaInfo.clinicCloseDay
                                     } catch (e: Exception) {
                                         e.printStackTrace()
                                     }
@@ -234,8 +235,8 @@ class ConfirmBooking : AppCompatActivity() {
                 val doctorBookingsRef = firebase.getReference("clinicBookings").child(clinicName.replace(" ", "_").replace(".", ","))
                 doctorBookingsRef.child(bookingId).setValue(booking)
 
-                val intent = Intent(this, BookingHistory::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                val intent = Intent(this, UserPage::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
                 finish()
             }

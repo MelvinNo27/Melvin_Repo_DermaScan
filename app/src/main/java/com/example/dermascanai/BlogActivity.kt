@@ -317,22 +317,38 @@
 
 
         private fun fetchBlogPosts() {
-            blogRef.orderByChild("timestamp").addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    blogList.clear()
-                    for (postSnapshot in snapshot.children) {
-                        val blog = postSnapshot.getValue(BlogPost::class.java)
-                        blog?.let { blogList.add(it) }
-                    }
-                    blogList.reverse()
-                    blogAdapter.notifyDataSetChanged()
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val hiddenRef = FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("hiddenPosts")
+                .child(currentUserId)
+
+            hiddenRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(hiddenSnap: DataSnapshot) {
+                    val hiddenIds = hiddenSnap.children.map { it.key!! }.toSet()
+
+                    blogRef.orderByChild("timestamp").addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            blogList.clear()
+                            for (postSnapshot in snapshot.children) {
+                                val blog = postSnapshot.getValue(BlogPost::class.java)
+                                if (blog != null && !hiddenIds.contains(blog.postId)) {
+                                    blogList.add(blog)
+                                }
+                            }
+                            blogList.reverse() // newest first
+                            blogAdapter.notifyDataSetChanged()
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            Toast.makeText(this@BlogActivity, "Failed to fetch blog posts", Toast.LENGTH_SHORT).show()
+                        }
+                    })
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@BlogActivity, "Failed to fetch blog posts", Toast.LENGTH_SHORT).show()
-                }
+                override fun onCancelled(error: DatabaseError) {}
             })
         }
+
 
         private val IMAGE_PICK_CODE = 1000
         private var tempImageBinding: DialogAddBlogBinding? = null

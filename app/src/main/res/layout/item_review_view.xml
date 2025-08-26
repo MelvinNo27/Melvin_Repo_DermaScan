@@ -34,7 +34,10 @@
             android:stepSize="0.5"
             android:scaleX="0.8"
             android:scaleY="0.8"
-            style="@style/Widget.AppCompat.RatingBar" />
+            style="@style/Widget.AppCompat.RatingBar"
+            android:progressTint="@android:color/holo_orange_light"
+            android:secondaryProgressTint="@android:color/darker_gray"
+            android:backgroundTint="@android:color/darker_gray"/>
 
 
         <TextView

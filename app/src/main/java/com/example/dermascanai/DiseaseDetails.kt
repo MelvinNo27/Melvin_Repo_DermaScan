@@ -38,14 +38,20 @@ class DiseaseDetails : AppCompatActivity() {
 
     private fun fetchDetails() {
         val condition = intent.getStringExtra("condition")
-        val img = intent.getStringExtra("image")
+        val imgBase64 = intent.getStringExtra("image")
         val diseaseRef: DatabaseReference = database.getReference("disease").child(condition ?: return)
 
         diseaseRef.get().addOnSuccessListener { snapshot ->
             if (snapshot.exists()) {
                 val diseaseInfo = snapshot.getValue(DiseaseInfo::class.java)
 
-                binding.dataImg.setImageBitmap(img as Bitmap?)
+                // ✅ Decode Base64 string into Bitmap
+                if (!imgBase64.isNullOrEmpty()) {
+                    val decodedBytes = android.util.Base64.decode(imgBase64, android.util.Base64.DEFAULT)
+                    val bitmap = android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                    binding.dataImg.setImageBitmap(bitmap)
+                }
+
                 binding.textView22.text = condition
                 binding.diseaseDescription.text = diseaseInfo?.des
                 binding.diseaseCause.text = diseaseInfo?.cause
@@ -57,17 +63,16 @@ class DiseaseDetails : AppCompatActivity() {
                     binding.cttoText.apply {
                         visibility = android.view.View.VISIBLE
                         setOnClickListener {
-
                             showWarningDialog(creditUrl)
                         }
                     }
                 } else {
-
                     binding.cttoText.visibility = android.view.View.GONE
                 }
             }
         }
     }
+
 
     // Function to show the warning dialog
     private fun showWarningDialog(url: String) {

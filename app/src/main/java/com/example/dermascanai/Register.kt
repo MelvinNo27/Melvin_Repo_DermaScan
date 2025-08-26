@@ -1,5 +1,6 @@
 package com.example.dermascanai
 
+import android.R.attr.password
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -21,6 +22,15 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import org.mindrot.jbcrypt.BCrypt
 import java.io.ByteArrayOutputStream
+import java.util.Properties
+import javax.mail.Authenticator
+import javax.mail.Message
+import javax.mail.PasswordAuthentication
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
+
 
 class Register : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
@@ -36,6 +46,9 @@ class Register : AppCompatActivity() {
     private val REQUEST_IMAGE_CAPTURE = 1
     private val REQUEST_IMAGE_PICK = 2
     private val REQUEST_CAMERA_PERMISSION = 100
+
+    private val SMTP_USER = "rp0887955@gmail.com"     // <-- your Gmail
+    private val SMTP_PASS = "whknsnwbhxubpqkm "
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +101,82 @@ class Register : AppCompatActivity() {
             finish()
         }
     }
+    private fun generateOTP(): String {
+        return (100000..999999).random().toString()
+    }
+
+
+    private fun sendOtpEmail(email: String, otp: String) {
+        Thread {
+            try {
+                val subject = "🔐 Verify Your DermaScan Account"
+
+                // Replace with your Firebase Storage or web-hosted logo URL
+                val logoUrl = "https://imgur.com/a/BTNNzGi"
+
+                val htmlMessage = """
+                <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f6f8; color: #333;">
+                    <div style="max-width: 500px; margin: auto; background: #ffffff; border-radius: 10px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <img src="$logoUrl" alt="DermaScan Logo" style="width: 120px; height: auto;">
+                        </div>
+                        
+                        <h2 style="text-align: center; color: #1976d2;">DermaScan Verification</h2>
+                        
+                        <p style="font-size: 16px;">Hello 👋,</p>
+                        <p style="font-size: 16px;">Use the OTP below to verify your account. This code will expire in <b>5 minutes</b>:</p>
+                        
+                        <div style="text-align: center; margin: 20px 0;">
+                            <span style="font-size: 32px; font-weight: bold; color: #1976d2; letter-spacing: 5px;">$otp</span>
+                        </div>
+                        
+                        <p style="font-size: 14px; color: #777;">If you didn’t request this, please ignore this email.</p>
+                        <hr style="margin: 20px 0;">
+                        <p style="font-size: 12px; text-align: center; color: #999;">© 2025 DermaScan. All rights reserved.</p>
+                    </div>
+                </div>
+            """.trimIndent()
+
+                sendHtmlMail(email, subject, htmlMessage)
+
+                runOnUiThread {
+                    Toast.makeText(this, "OTP sent to $email", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this, "Failed to send OTP: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+    fun sendHtmlMail(to: String, subject: String, htmlBody: String) {
+        val props = Properties().apply {
+            put("mail.smtp.auth", "true")
+            put("mail.smtp.starttls.enable", "true")
+            put("mail.smtp.host", "smtp.gmail.com")
+            put("mail.smtp.port", "587")
+        }
+
+        val session = Session.getInstance(props, object : Authenticator() {
+            override fun getPasswordAuthentication(): PasswordAuthentication {
+                return PasswordAuthentication(SMTP_USER, SMTP_PASS)
+            }
+        })
+
+        val message = MimeMessage(session).apply {
+            setFrom(InternetAddress(SMTP_USER, "DermaScan AI")) // Gmail + display name
+            setRecipients(Message.RecipientType.TO, InternetAddress.parse(to))
+            this.subject = subject
+            setContent(htmlBody, "text/html; charset=utf-8")
+        }
+
+        Transport.send(message)
+    }
+
+
+
 
     private fun registerUser() {
         val fullName = binding.name.text.toString().trim()
@@ -129,55 +218,68 @@ class Register : AppCompatActivity() {
         val hashedPassword = hashPassword(password)
         val newUser = UserInfo(fullName, email, hashedPassword, userRole, base64Image)
 
-        mAuth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { authTask ->
-                if (authTask.isSuccessful) {
-                    val newUserId = mAuth.currentUser?.uid
-                    if (newUserId != null) {
-                        if(userRole == "user") {
-                            mDatabase.child(newUserId).setValue(newUser)
-                                .addOnCompleteListener { dbTask ->
-                                    if (dbTask.isSuccessful) {
-                                        Toast.makeText(
-                                            this,
-                                            "Registration successful",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        FirebaseAuth.getInstance().signOut()
-                                        toLogin()
-                                    } else {
-                                        Toast.makeText(
-                                            this,
-                                            "Failed to save user data",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                        }else{
-                            dDatabase.child(newUserId).setValue(newUser)
-                                .addOnCompleteListener { dbTask ->
-                                    if (dbTask.isSuccessful) {
-                                        Toast.makeText(
-                                            this,
-                                            "Registration successful",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        FirebaseAuth.getInstance().signOut()
-                                        toLogin()
-                                    } else {
-                                        Toast.makeText(
-                                            this,
-                                            "Failed to save user data",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                        }
-                    }
-                } else {
-                    Toast.makeText(this, "Auth failed: ${authTask.exception?.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
+//        mAuth.createUserWithEmailAndPassword(email, password)
+//            .addOnCompleteListener { authTask ->
+//                if (authTask.isSuccessful) {
+//                    val newUserId = mAuth.currentUser?.uid
+//                    if (newUserId != null) {
+//                        if(userRole == "user") {
+//                            mDatabase.child(newUserId).setValue(newUser)
+//                                .addOnCompleteListener { dbTask ->
+//                                    if (dbTask.isSuccessful) {
+//                                        Toast.makeText(
+//                                            this,
+//                                            "Registration successful",
+//                                            Toast.LENGTH_SHORT
+//                                        ).show()
+//                                        FirebaseAuth.getInstance().signOut()
+//                                        toLogin()
+//                                    } else {
+//                                        Toast.makeText(
+//                                            this,
+//                                            "Failed to save user data",
+//                                            Toast.LENGTH_SHORT
+//                                        ).show()
+//                                    }
+//                                }
+//                        }else{
+//                            dDatabase.child(newUserId).setValue(newUser)
+//                                .addOnCompleteListener { dbTask ->
+//                                    if (dbTask.isSuccessful) {
+//                                        Toast.makeText(
+//                                            this,
+//                                            "Registration successful",
+//                                            Toast.LENGTH_SHORT
+//                                        ).show()
+//                                        FirebaseAuth.getInstance().signOut()
+//                                        toLogin()
+//                                    } else {
+//                                        Toast.makeText(
+//                                            this,
+//                                            "Failed to save user data",
+//                                            Toast.LENGTH_SHORT
+//                                        ).show()
+//                                    }
+//                                }
+//                        }
+//                    }
+//                } else {
+//                    Toast.makeText(this, "Auth failed: ${authTask.exception?.message}", Toast.LENGTH_SHORT).show()
+//                }
+//            }
+
+        val otp = generateOTP()
+        sendOtpEmail(email, otp)
+
+        // go to OTP screen
+        val intent = Intent(this, OTPAuth::class.java)
+        intent.putExtra("FULL_NAME", fullName)
+        intent.putExtra("EMAIL", email)
+        intent.putExtra("PASSWORD", password)
+        intent.putExtra("ROLE", userRole)
+        intent.putExtra("IMAGE", base64Image)
+        intent.putExtra("OTP", otp)
+        startActivity(intent)
     }
 
 
