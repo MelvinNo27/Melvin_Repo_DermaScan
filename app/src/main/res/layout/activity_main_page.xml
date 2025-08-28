@@ -72,6 +72,7 @@
                     android:layout_width="200dp"
                     android:layout_height="200dp"
                     android:scaleType="fitCenter"
+                    android:layout_margin="5dp"
                     android:contentDescription="Sample Image"
                     android:src="@drawable/ic_scan" />
 
@@ -122,6 +123,7 @@
                 android:text="View more details"
                 android:textColor="@color/blue"
                 android:clickable="true"
+                android:textStyle="bold"
                 android:visibility="gone"
                 android:layout_marginTop="5dp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -149,7 +151,6 @@
                 android:hint="Suggested Remedy Here"
                 android:textColor="@color/black"
                 android:textSize="15sp"
-                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/text2" />
@@ -171,43 +172,69 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="You can visit one of our partnered Clinic"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/remedyTextView" />
 
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/nerbyClinic"
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"
-                android:layout_marginStart="15dp"
-                android:layout_marginEnd="15dp"
-                android:layout_marginBottom="50dp"
-                android:padding="15dp"
-                android:visibility="gone"
+                android:layout_height="200dp"
+                app:cardCornerRadius="20dp"
+                android:layout_margin="15dp"
+                android:visibility="visible"
+                android:elevation="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textClinic" />
+                app:layout_constraintTop_toBottomOf="@+id/textClinic"
+                >
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/nerbyClinic"
+                    android:layout_width="match_parent"
+                    android:layout_height="240dp"
+
+                    android:padding="15dp"
+
+                    />
+
+            </androidx.cardview.widget.CardView>
 
 
 
-            <!-- ProgressBar added here -->
-            <ProgressBar
-                android:id="@+id/loadingProgressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/remedyTextView"
-                android:indeterminate="true" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
+
+    <FrameLayout
+        android:id="@+id/progressContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:elevation="8dp"
+            app:cardCornerRadius="15dp">
+
+            <pl.droidsonroids.gif.GifImageView
+                android:id="@+id/animatedProgressBar"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/lg_loading" />
+        </androidx.cardview.widget.CardView>
+
+    </FrameLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/scanButton"

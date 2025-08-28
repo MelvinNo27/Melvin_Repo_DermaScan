@@ -88,7 +88,6 @@ class Register : AppCompatActivity() {
         }
 
 
-
         binding.uploadBtn.setOnClickListener {
             showImagePickerDialog()
         }

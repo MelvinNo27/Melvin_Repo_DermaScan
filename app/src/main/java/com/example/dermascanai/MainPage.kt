@@ -24,6 +24,7 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import android.content.res.AssetFileDescriptor
 import android.media.ExifInterface
+import android.os.Environment
 import android.util.Base64
 import android.util.Log
 import android.view.View
@@ -32,6 +33,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -74,6 +76,11 @@ class MainPage : AppCompatActivity() {
     private lateinit var conditionLabels: List<String>
 
     private var selectedImageBase64: String? = null
+
+    private lateinit var pickImageLauncher: ActivityResultLauncher<String>
+    private lateinit var takePhotoLauncher: ActivityResultLauncher<Uri>
+    private var photoUri: Uri? = null
+
     private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             val inputStream = contentResolver.openInputStream(it)
@@ -90,6 +97,7 @@ class MainPage : AppCompatActivity() {
     private val clinicList = mutableListOf<ClinicInfo>()
 
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainPageBinding.inflate(layoutInflater)
@@ -102,7 +110,7 @@ class MainPage : AppCompatActivity() {
             .getReference("clinicInfo")
 
 
-        loadClinicsFromFirebase()
+//        loadClinicsFromFirebase()
         checkPermissions()
 
         try {
@@ -111,25 +119,6 @@ class MainPage : AppCompatActivity() {
             Log.e("MainPage", "Model load failed", e)
             Toast.makeText(this, "Model load failed: ${e.message}", Toast.LENGTH_LONG).show()
         }
-
-//        try {
-//            val tfliteModel = org.tensorflow.lite.support.common.FileUtil.loadMappedFile(
-//                this,
-//                "dermascan21_float16.tflite"
-//            )
-//
-//            val options = Interpreter.Options().apply {
-//                setNumThreads(2) // try 2 threads to reduce memory pressure
-//                setUseNNAPI(true) // delegate to NNAPI if available
-//            }
-//
-//            interpreter = Interpreter(tfliteModel, options)
-//
-//        } catch (e: Exception) {
-//            Log.e("MainPage", "Model load failed", e)
-//            Toast.makeText(this, "Model load failed: ${e.message}", Toast.LENGTH_LONG).show()
-//        }
-
 
         try {
             conditionLabels = loadConditionLabels()
@@ -151,31 +140,106 @@ class MainPage : AppCompatActivity() {
         binding.nerbyClinic.layoutManager = LinearLayoutManager(this)
         binding.nerbyClinic.adapter = adapter
 
+        binding.nerbyClinic.visibility = View.GONE
+        binding.textClinic.visibility = View.GONE
+        pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if (uri != null) {
+                handleImage(uri)
+            }
+        }
+
+        takePhotoLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success && photoUri != null) {
+                handleImage(photoUri!!)
+            }
+        }
+
+
+        // ✅ Button: show choice dialog
         binding.scanButton.setOnClickListener {
             showImagePickerDialog()
         }
 
+
+
         binding.backBTN.setOnClickListener {
             finish()
         }
-        val userId = firebase.currentUser?.uid ?: return
-        val roleRef = database.getReference("clinicInfo").child(userId).child("role")
 
-        roleRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val role = snapshot.getValue(String::class.java)
-                if (role == "derma") {
-                    binding.reportScan.visibility = View.VISIBLE
-                } else {
-                    binding.reportScan.visibility = View.GONE
-                }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@MainPage, "Failed to load user role", Toast.LENGTH_SHORT).show()
-            }
-        })
+
     }
+
+    private fun handleImage(uri: Uri) {
+        binding.progressContainer.visibility = View.VISIBLE
+        binding.skinImageView.setImageURI(uri)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            val (result, bitmap) = withContext(Dispatchers.Default) {
+                val bmp = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+                val prediction = predict(bmp)
+                prediction to bmp
+            }
+
+            val diseaseName = result.substringBeforeLast(" (").trim()
+
+            binding.resultTextView.text = "You might have $result"
+            binding.remedyTextView.text = getRemedy(diseaseName)
+
+            // ✅ Save button
+            binding.saveScanButton.visibility = View.VISIBLE
+            binding.saveScanButton.setOnClickListener {
+                saveScanResultToFirebase(result, getRemedy(diseaseName), bitmap)
+            }
+
+            // ✅ Details button
+            binding.detailBtn.visibility = View.VISIBLE
+            binding.detailBtn.setOnClickListener {
+                val baos = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+                val byteArray = baos.toByteArray()
+                val imageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT)
+
+                val intent = Intent(this@MainPage, DiseaseDetails::class.java)
+                intent.putExtra("condition", diseaseName)
+                intent.putExtra("image", imageBase64)
+                startActivity(intent)
+            }
+
+            // ✅ Report Scan button (only for derma users)
+            val userId = firebase.currentUser?.uid ?: return@launch
+            val roleRef = database.getReference("clinicInfo").child(userId).child("role")
+
+            roleRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val role = snapshot.getValue(String::class.java)
+                    if (role == "derma") {
+                        binding.reportScan.visibility = View.VISIBLE
+                        binding.reportScan.setOnClickListener {
+                            showReportDialog()
+                        }
+                    } else {
+                        binding.reportScan.visibility = View.GONE
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@MainPage, "Failed to load user role", Toast.LENGTH_SHORT).show()
+                }
+            })
+
+            // ✅ Clinics section
+            binding.textClinic.visibility = View.VISIBLE
+            binding.nerbyClinic.visibility = View.VISIBLE
+            loadClinicsFromFirebase()
+
+            binding.progressContainer.visibility = View.GONE
+        }
+    }
+
+
+
+
 
     private fun loadClinicsFromFirebase() {
         databaseA.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -184,7 +248,7 @@ class MainPage : AppCompatActivity() {
                 for (clinicSnapshot in snapshot.children) {
                     val map = clinicSnapshot.value as? Map<String, Any> ?: continue
 
-                    // Safely convert clinicPhone to String regardless of stored type
+                    // Safely convert clinicPhone to String
                     val phoneValue = map["clinicPhone"]
                     val clinicPhone = when (phoneValue) {
                         is String -> phoneValue
@@ -193,36 +257,33 @@ class MainPage : AppCompatActivity() {
                         else -> null
                     }
 
-                    // Manually construct ClinicInfo
                     val clinic = ClinicInfo(
                         clinicName = map["clinicName"] as? String,
                         email = map["email"] as? String,
                         clinicPhone = clinicPhone,
-                        profileImage = map["profileImage"] as? String,
-                        address = map["address"] as? String,
-                        // Add other fields as needed, safely casted
+                        profileImage = map["logoImage"] as? String,
+                        address = map["address"] as? String
                     )
 
                     clinicList.add(clinic)
-
-
                 }
 
                 adapter.notifyDataSetChanged()
 
-
+                // ✅ make sure RecyclerView is visible if clinics exist
+                if (clinicList.isNotEmpty()) {
+                    binding.nerbyClinic.visibility = View.VISIBLE
+                    binding.textClinic.visibility = View.VISIBLE
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(this@MainPage, "Failed to load clinics: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         })
-        adapter = ClinicAdapter(this, clinicList) { clickedClinic ->
-            val intent = Intent(this, ClinicDetails::class.java)
-            intent.putExtra("email", clickedClinic)
-            startActivity(intent)
-        }
     }
+
+
 
 
 
@@ -252,18 +313,34 @@ class MainPage : AppCompatActivity() {
             )
         }
     }
+    private fun createImageFile(): File {
+        return File.createTempFile(
+            "IMG_", ".jpg", cacheDir // saves in cache directory
+        )
+    }
+
 
     private fun showImagePickerDialog() {
         val options = arrayOf("Choose from Gallery", "Take a Photo")
-        android.app.AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
+            .setTitle("Select Option")
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> getSkinImageFromGallery()
-                    1 -> takePhoto()
+                    0 -> pickImageLauncher.launch("image/*")
+                    1 -> {
+                        val photoFile = createImageFile()
+                        photoUri = FileProvider.getUriForFile(
+                            this,
+                            "${applicationContext.packageName}.fileprovider",
+                            photoFile
+                        )
+                        takePhotoLauncher.launch(photoUri!!) // ✅ now non-null
+                    }
                 }
             }
             .show()
     }
+
 
     private fun getSkinImageFromGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -281,69 +358,69 @@ class MainPage : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (resultCode == Activity.RESULT_OK) {
-            val bitmap: Bitmap = when (requestCode) {
-                PICK_IMAGE_REQUEST -> {
-                    imageUri = data?.data
-                    MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
-                }
-                CAMERA_REQUEST -> BitmapFactory.decodeStream(contentResolver.openInputStream(imageUri!!))
-                else -> return
-            }
-
-            CoroutineScope(Dispatchers.Main).launch {
-                showProgress()
-
-                val rotatedBitmap = rotateImageIfNeeded(bitmap, imageUri)
-                val result = predict(rotatedBitmap)
-                val diseaseName = result.substringBeforeLast(" (").trim()
-
-
-                binding.reportScan.setOnClickListener {
-                    showReportDialog()
-                }
-
-                hideProgress()
-//                val result = predictionResult
-                binding.detailBtn.visibility = View.VISIBLE
-                binding.skinImageView.setImageBitmap(rotatedBitmap)
-                binding.resultTextView.text = "You might have $result"
-                binding.remedyTextView.text = getRemedy(diseaseName)
-
-                binding.detailBtn.setOnClickListener {
-                    // Get only the disease name (before the "(" )
-                    val baos = ByteArrayOutputStream()
-                    rotatedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-                    val byteArray = baos.toByteArray()
-                    val imageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT)
-                    val diseaseName = result.substringBeforeLast(" (").trim()
-
-                    val intent = Intent(this@MainPage, DiseaseDetails::class.java)
-                    intent.putExtra("condition", diseaseName)   // only "Acne"
-                    intent.putExtra("image", imageBase64) // still sending image
-                    startActivity(intent)
-                }
-
-                binding.saveScanButton.visibility = View.VISIBLE
-                binding.nerbyClinic.visibility = View.VISIBLE
-                binding.textClinic.visibility = View.VISIBLE
-
-                binding.saveScanButton.setOnClickListener {
-
-                    val condition = result
-                    val remedy = getRemedy(result)
-
-                    saveScanResultToFirebase(condition, remedy, bitmap)
-                }
-
-
-
-            }
-        }
-    }
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//
+//        if (resultCode == Activity.RESULT_OK) {
+//            val bitmap: Bitmap = when (requestCode) {
+//                PICK_IMAGE_REQUEST -> {
+//                    imageUri = data?.data
+//                    MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
+//                }
+//                CAMERA_REQUEST -> BitmapFactory.decodeStream(contentResolver.openInputStream(imageUri!!))
+//                else -> return
+//            }
+//
+//            CoroutineScope(Dispatchers.Main).launch {
+////                showProgress()
+//
+//                val rotatedBitmap = rotateImageIfNeeded(bitmap, imageUri)
+//                val result = predict(rotatedBitmap)
+//                val diseaseName = result.substringBeforeLast(" (").trim()
+//
+//
+//                binding.reportScan.setOnClickListener {
+//                    showReportDialog()
+//                }
+//
+////                hideProgress()
+////                val result = predictionResult
+//                binding.detailBtn.visibility = View.VISIBLE
+//                binding.skinImageView.setImageBitmap(rotatedBitmap)
+//                binding.resultTextView.text = "You might have $result"
+//                binding.remedyTextView.text = getRemedy(diseaseName)
+//
+//                binding.detailBtn.setOnClickListener {
+//                    // Get only the disease name (before the "(" )
+//                    val baos = ByteArrayOutputStream()
+//                    rotatedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+//                    val byteArray = baos.toByteArray()
+//                    val imageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT)
+//                    val diseaseName = result.substringBeforeLast(" (").trim()
+//
+//                    val intent = Intent(this@MainPage, DiseaseDetails::class.java)
+//                    intent.putExtra("condition", diseaseName)   // only "Acne"
+//                    intent.putExtra("image", imageBase64) // still sending image
+//                    startActivity(intent)
+//                }
+//
+//                binding.saveScanButton.visibility = View.VISIBLE
+//                binding.nerbyClinic.visibility = View.VISIBLE
+//                binding.textClinic.visibility = View.VISIBLE
+//
+//                binding.saveScanButton.setOnClickListener {
+//
+//                    val condition = result
+//                    val remedy = getRemedy(result)
+//
+//                    saveScanResultToFirebase(condition, remedy, bitmap)
+//                }
+//
+//
+//
+//            }
+//        }
+//    }
 
     private fun showReportDialog() {
         val builder = AlertDialog.Builder(this)
@@ -472,11 +549,11 @@ class MainPage : AppCompatActivity() {
         return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
     }
 
-    private fun createImageFile(): File {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val storageDir: File = getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)!!
-        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
-    }
+//    private fun createImageFile(): File {
+//        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+//        val storageDir: File = getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)!!
+//        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
+//    }
 
     private fun loadLabels(): List<String> {
         val labels = mutableListOf<String>()
@@ -489,18 +566,6 @@ class MainPage : AppCompatActivity() {
         }
         return labels
     }
-
-//    private val conditionLabels: List<String> by lazy { loadLabels() }
-//
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        try {
-//            interpreter?.close()
-//            interpreter = null
-//        } catch (e: Exception) {
-//            Log.e("MainPage", "Error closing interpreter", e)
-//        }
-//    }
 
 
     private fun predict(bitmap: Bitmap): String {
@@ -594,28 +659,6 @@ class MainPage : AppCompatActivity() {
     }
 
 
-    private fun getConditionLabel(index: Int): String {
-        val conditionLabels = listOf(
-            "Acne",
-            "Actinic Keratosis (AK)",
-            "Basal Cell Carcinoma (BCC)",
-            "Chickenpox (Varicella)",
-            "Eczema  or Atopic Dermatitis",
-            "Melanocytic Nevi (Moles)",
-            "Melanoma",
-            "Monkeypox",
-            "Nail Fungus (Onychomycosis)",
-            "Normal Skin",
-            "Psoriasis",
-            "Rosacea",
-            "Seborrheic Keratosis",
-            "Tinea or Ringworm",
-            "Warts (Verruca, Viral Infection)"
-        )
-        return conditionLabels.getOrElse(index) { "Unknown" }
-    }
-
-
     private fun getRemedy(condition: String): String {
         return when (condition) {
 
@@ -687,12 +730,19 @@ class MainPage : AppCompatActivity() {
     }
 
 
-    private fun showProgress() {
-        binding.loadingProgressBar.visibility = View.VISIBLE
+
+    companion object {
+        private const val PERMISSION_REQUEST_CODE = 1001
     }
 
-    private fun hideProgress() {
-        binding.loadingProgressBar.visibility = View.GONE
-    }
+
+//
+//    private fun showProgress() {
+//        binding.loadingProgressBar.visibility = View.VISIBLE
+//    }
+//
+//    private fun hideProgress() {
+//        binding.loadingProgressBar.visibility = View.GONE
+//    }
 
 }

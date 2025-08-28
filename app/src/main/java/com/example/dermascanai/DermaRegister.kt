@@ -85,6 +85,11 @@ class DermaRegister : AppCompatActivity() {
             }
         }
 
+        binding.navTerms.setOnClickListener {
+            val intent = Intent(this, TermsConditions::class.java)
+            startActivity(intent)
+        }
+
         binding.backBTN.setOnClickListener { finish() }
 
 
