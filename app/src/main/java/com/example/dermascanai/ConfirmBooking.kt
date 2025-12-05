@@ -34,6 +34,7 @@ class ConfirmBooking : AppCompatActivity() {
     private var selectedTime: String = ""
     private var selectedService: String = ""
     private var patientEmail: String = ""
+    private var patientName: String = ""
     private var clinicName: String = ""
     private var timestampMillis: Long = 0L
 
@@ -74,6 +75,7 @@ class ConfirmBooking : AppCompatActivity() {
         emojiIcon.setOnClickListener { showEmojiPopup(it) }
 
         fetchUserData(clinicName)
+        fetchPatientName()
 
         binding.backBTN.setOnClickListener { finish() }
 
@@ -81,6 +83,7 @@ class ConfirmBooking : AppCompatActivity() {
         binding.date.text = selectedDate
         binding.timeSlot.text = selectedTime
         binding.serviceText.text = selectedService
+
 
 
         // ✅ Confirm button click
@@ -275,6 +278,21 @@ class ConfirmBooking : AppCompatActivity() {
     }
 
 
+    private fun fetchPatientName() {
+        val userId = auth.currentUser?.uid ?: return
+        val ref = firebase.getReference("userInfo").child(userId)
+
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                patientName = snapshot.child("name").getValue(String::class.java) ?: ""
+                Log.d("ConfirmBooking", "Patient name fetched: $patientName")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ConfirmBooking", "Error fetching patient name: ${error.message}")
+            }
+        })
+    }
 
 
     // ✅ Modified to include selectedTime
@@ -289,6 +307,7 @@ class ConfirmBooking : AppCompatActivity() {
         booking["userId"] = userId
         booking["patientEmail"] = patientEmail
         booking["clinicId"] = clinicId
+        booking["patientName"] = patientName   // ✅ Added
         booking["clinicName"] = clinicName
         booking["date"] = selectedDate
         booking["time"] = selectedTime

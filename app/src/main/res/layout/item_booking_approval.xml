@@ -16,45 +16,6 @@
         android:orientation="vertical"
         android:background="@drawable/cardbackground">
 
-        <!-- Status Header Bar -->
-        <LinearLayout
-            android:id="@+id/statusLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/statusbackground"
-            android:orientation="horizontal"
-            android:paddingVertical="10dp"
-            android:paddingHorizontal="16dp"
-            android:gravity="center_vertical"
-            android:visibility="gone">
-
-            <ImageView
-                android:id="@+id/statusIcon"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_marginEnd="8dp"
-                android:src="@drawable/circlebackground" />
-
-            <TextView
-                android:id="@+id/statusTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@android:color/white"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                tools:text="Approved" />
-
-            <TextView
-                android:id="@+id/bookingIdTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
-                android:textSize="12sp"
-                android:alpha="0.9"
-                tools:text="#BOOK123" />
-        </LinearLayout>
-
         <!-- Main Content -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -69,12 +30,23 @@
                 android:orientation="horizontal"
                 android:layout_marginBottom="16dp">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_profile"
+                <androidx.cardview.widget.CardView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
                     android:layout_marginEnd="12dp"
-                    android:layout_gravity="center_vertical" />
+                    app:cardCornerRadius="100dp"
+                    app:cardElevation="6dp"
+                    app:cardBackgroundColor="@color/white">
+
+                    <ImageView
+                        android:id="@+id/profile"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/default_profile" />
+
+                </androidx.cardview.widget.CardView>
+
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -100,173 +72,21 @@
                         android:fontFamily="sans-serif"
                         android:layout_marginTop="4dp"
                         tools:text="John Doe" />
-                </LinearLayout>
-            </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/dividerColor"
-                android:layout_marginBottom="16dp" />
-
-            <!-- Date and Time Card -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/lightBackground">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/ic_calendar"
-                                android:layout_marginEnd="8dp"
-                                app:tint="@color/orange" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="DATE"
-                                android:textColor="@color/textSecondary"
-                                android:textSize="12sp"
-                                android:fontFamily="sans-serif-medium" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/appointmentDateTv"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/textPrimary"
-                            android:textSize="16sp"
-                            android:fontFamily="sans-serif"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginStart="24dp"
-                            tools:text="Mon, May 1, 2023" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="@color/dividerColor" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Service Section -->
-            <LinearLayout
-                android:id="@+id/serviceContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_service"
-                    android:layout_marginEnd="12dp"
-                    android:layout_gravity="center_vertical" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
+                    <!-- Booking Timestamp -->
                     <TextView
+                        android:id="@+id/bookingTimestampTv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="SERVICE"
-                        android:textColor="@color/green"
-                        android:textSize="12sp"
-                        android:letterSpacing="0.1"
-                        android:fontFamily="sans-serif-medium" />
-
-                    <TextView
-                        android:id="@+id/serviceTextView"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/textPrimary"
-                        android:textSize="16sp"
-                        android:fontFamily="sans-serif"
-                        android:layout_marginTop="4dp"
-                        tools:text="General Consultation" />
+                        android:text="Booked on Nov 20, 2024 at 3:45 PM"
+                        android:textSize="11sp"
+                        android:textColor="@color/gray"
+                        android:gravity="end"
+                        android:fontStyle="italic"
+                        android:visibility="visible"
+                        tools:text="Booked 2 hours ago" />
                 </LinearLayout>
             </LinearLayout>
-
-            <!-- Notes Section -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/noteBackground">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_notes"
-                        android:layout_marginEnd="12dp"
-                        android:layout_gravity="center_vertical" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="NOTES"
-                            android:textColor="@color/textSecondary"
-                            android:textSize="12sp"
-                            android:fontFamily="sans-serif-medium"
-                            android:layout_marginBottom="8dp" />
-
-                        <TextView
-                            android:id="@+id/notesTextView"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/textPrimary"
-                            android:textSize="14sp"
-                            android:lineSpacingExtra="4dp"
-                            android:fontFamily="sans-serif"
-                            tools:text="Patient notes and additional information about the appointment. May include special instructions or requirements." />
-                    </LinearLayout>
-
-
-
-                </LinearLayout>
-
-
-            </androidx.cardview.widget.CardView>
-
-
             <!-- Decline Reason (only visible if declined) -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/declineReasonLayout"
@@ -367,20 +187,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Booking Timestamp -->
-            <TextView
-                android:id="@+id/bookingTimestampTv"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="Booked on Nov 20, 2024 at 3:45 PM"
-                android:textSize="11sp"
-                android:textColor="@color/gray"
-                android:gravity="end"
-                android:fontStyle="italic"
-                android:visibility="visible"
-                tools:text="Booked 2 hours ago" />
-
             <!-- Action Buttons - KEPT THE SAME AS ORIGINAL -->
             <LinearLayout
                 android:id="@+id/approvalButtonsLayout"
@@ -392,7 +198,6 @@
                     android:id="@+id/approveButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/main_green"
                     android:text="Approve"

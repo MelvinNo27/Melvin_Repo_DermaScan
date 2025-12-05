@@ -50,6 +50,7 @@ class BookingApprovalRecords : AppCompatActivity() {
         val chipStatusMap = mapOf(
             binding.pendingFilterChip to "pending",
             binding.approvedFilterChip to "confirmed",
+            binding.completedFilterChip to "completed",
             binding.declinedFilterChip to "declined",
             binding.cancelledFilterChip to "cancelled",
             binding.allFilterChip to null
@@ -128,7 +129,7 @@ class BookingApprovalRecords : AppCompatActivity() {
             onApprove = { booking -> updateBookingStatus(booking, "confirmed") },
             onDecline = { booking -> showDeclineReasonDialog(booking) },
             onCancel = { booking -> showCancellationReasonDialog(booking) },
-            onDone = { booking -> saveBookingToReports(booking) }
+            onDone = { booking -> markBookingAsCompleted(booking) }
         )
         binding.bookingRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.bookingRecyclerView.adapter = adapter
@@ -153,10 +154,15 @@ class BookingApprovalRecords : AppCompatActivity() {
                 if (snapshot.exists()) {
                     for (bookingSnapshot in snapshot.children) {
                         val booking = bookingSnapshot.getValue(BookingData::class.java)
-                        booking?.let { appointmentList.add(it) }
+                        booking?.let {
+                            appointmentList.add(it)
+                            Log.d("BookingApprovalRecords", "Loaded booking: ${it.bookingId}, Status: ${it.status}")
+                        }
                     }
                     appointmentList.sortByDescending { it.timestampMillis }
                 }
+
+                Log.d("BookingApprovalRecords", "Total appointments loaded: ${appointmentList.size}")
                 adapter.notifyDataSetChanged()
                 updateViewVisibility()
                 binding.progressBar.visibility = View.GONE
@@ -167,7 +173,6 @@ class BookingApprovalRecords : AppCompatActivity() {
                 binding.progressBar.visibility = View.GONE
             }
         })
-
     }
 
 
@@ -198,6 +203,12 @@ class BookingApprovalRecords : AppCompatActivity() {
                     binding.emptyStateApprovedLayout.visibility = View.GONE
                     binding.emptyStateCancelledLayout.visibility = View.VISIBLE
                 }
+                binding.completedFilterChip.isChecked -> {
+                    binding.emptyStateLayout.visibility = View.VISIBLE
+                    binding.emptyStateDeclinedLayout.visibility = View.GONE
+                    binding.emptyStateApprovedLayout.visibility = View.GONE
+                    binding.emptyStateCancelledLayout.visibility = View.GONE
+                }
                 else -> {
                     binding.emptyStateLayout.visibility = View.VISIBLE
                     binding.emptyStateDeclinedLayout.visibility = View.GONE
@@ -213,6 +224,22 @@ class BookingApprovalRecords : AppCompatActivity() {
             binding.emptyStateCancelledLayout.visibility = View.GONE
             binding.bookingRecyclerView.visibility = View.VISIBLE
         }
+    }
+
+
+    private fun markBookingAsCompleted(booking: BookingData) {
+        AlertDialog.Builder(this)
+            .setTitle("Mark as Completed")
+            .setMessage("Are you sure this appointment has been completed?")
+            .setPositiveButton("Yes, Complete") { _, _ ->
+                // First mark as completed
+                updateBookingStatus(booking, "completed")
+
+                // Then save to reports
+                saveBookingToReports(booking)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
 
@@ -233,6 +260,14 @@ class BookingApprovalRecords : AppCompatActivity() {
         updates["/clinicInfo/$clinicId/bookings/$bookingId/status"] = newStatus
         updates["/userInfo/$userId/bookings/$bookingId/status"] = newStatus
 
+        // Add completion timestamp if marking as completed
+        if (newStatus == "completed") {
+            val completedTimestamp = System.currentTimeMillis()
+            updates["/bookings/$bookingId/completedTimestamp"] = completedTimestamp
+            updates["/clinicInfo/$clinicId/bookings/$bookingId/completedTimestamp"] = completedTimestamp
+            updates["/userInfo/$userId/bookings/$bookingId/completedTimestamp"] = completedTimestamp
+        }
+
         booking.declineReason?.takeIf { it.isNotEmpty() }?.let {
             updates["/bookings/$bookingId/declineReason"] = it
             updates["/clinicInfo/$clinicId/bookings/$bookingId/declineReason"] = it
@@ -250,6 +285,7 @@ class BookingApprovalRecords : AppCompatActivity() {
                 val statusMessage = when (newStatus) {
                     "confirmed" -> "approved"
                     "cancelled" -> "cancelled"
+                    "completed" -> "completed"
                     else -> "declined"
                 }
 
@@ -261,6 +297,8 @@ class BookingApprovalRecords : AppCompatActivity() {
 
                 Toast.makeText(this, "Appointment $statusMessage", Toast.LENGTH_SHORT).show()
 
+                Log.d("BookingApprovalRecords", "Booking $bookingId status updated to: $newStatus")
+
                 sendBookingNotification(
                     toUserId = userId,
                     fromUserId = clinicId,
@@ -268,6 +306,7 @@ class BookingApprovalRecords : AppCompatActivity() {
                     message = when (newStatus) {
                         "confirmed" -> "Your appointment has been approved"
                         "cancelled" -> "Your appointment has been cancelled"
+                        "completed" -> "Your appointment has been completed"
                         else -> "Your appointment has been declined"
                     }
                 )
@@ -317,6 +356,7 @@ class BookingApprovalRecords : AppCompatActivity() {
         when {
             binding.pendingFilterChip.isChecked -> loadAppointments("pending")
             binding.approvedFilterChip.isChecked -> loadAppointments("confirmed")
+            binding.completedFilterChip.isChecked -> loadAppointments("completed")
             binding.declinedFilterChip.isChecked -> loadAppointments("declined")
             binding.cancelledFilterChip.isChecked -> loadAppointments("cancelled")
             else -> loadAppointments()
@@ -398,6 +438,7 @@ class BookingApprovalRecords : AppCompatActivity() {
 
         database.child("notifications").child(toUserId).child(notificationId).setValue(notification)
     }
+
     private fun autoDeclineExpiredPendingBookings() {
         if (clinicId.isEmpty()) return
 
@@ -468,7 +509,7 @@ class BookingApprovalRecords : AppCompatActivity() {
                 for (bookingSnapshot in snapshot.children) {
 
                     val status = bookingSnapshot.child("status").getValue(String::class.java) ?: ""
-                    if (status != "confirmed") continue  // Only check confirmed appointments
+                    if (status != "confirmed") continue
 
                     val bookingId = bookingSnapshot.child("bookingId").getValue(String::class.java) ?: continue
                     val userId = bookingSnapshot.child("userId").getValue(String::class.java) ?: continue
@@ -479,7 +520,6 @@ class BookingApprovalRecords : AppCompatActivity() {
                         val dateTimeFormat = java.text.SimpleDateFormat("MMMM dd, yyyy HH:mm", Locale.getDefault())
                         val appointmentDateTime = dateTimeFormat.parse("$dateStr $timeStr") ?: continue
 
-                        // If appointment passed and NOT marked done → cancel it
                         if (appointmentDateTime.before(Date())) {
 
                             val updates = mapOf<String, Any>(
@@ -488,10 +528,8 @@ class BookingApprovalRecords : AppCompatActivity() {
                                 "autoCancelledTimestamp" to System.currentTimeMillis()
                             )
 
-                            // Update in clinic
                             bookingsRef.child(bookingId).updateChildren(updates)
 
-                            // Update in user side
                             database.reference.child("userInfo")
                                 .child(userId)
                                 .child("bookings")
@@ -524,18 +562,15 @@ class BookingApprovalRecords : AppCompatActivity() {
     private fun saveBookingToReports(booking: BookingData) {
         val usersRef = FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("userInfo")
 
-        // 1. Search for user by email
         usersRef.orderByChild("email").equalTo(booking.patientEmail)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     var patientName = "Unknown"
 
-                    // 2. Extract patient name
                     for (userSnap in snapshot.children) {
                         patientName = userSnap.child("name").getValue(String::class.java) ?: "Unknown"
                     }
 
-                    // 3. Now save the report with patientName included
                     val reportRef = FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/").reference
                         .child("reports")
                         .push()
@@ -552,38 +587,23 @@ class BookingApprovalRecords : AppCompatActivity() {
                         "bookedDate" to booking.date,
                         "bookedTime" to booking.time,
                         "message" to booking.message,
-                        "status" to booking.status,
-                        "createdAt" to booking.createdAt
+                        "status" to "completed",
+                        "createdAt" to booking.createdAt,
+                        "completedAt" to System.currentTimeMillis()
                     )
 
-                    // 4. Save to Firebase
                     reportRef.setValue(reportData)
                         .addOnSuccessListener {
-                            Toast.makeText(
-                                this@BookingApprovalRecords,
-                                "Report saved successfully",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Log.d("BookingApprovalRecords", "Report saved successfully for booking: ${booking.bookingId}")
                         }
                         .addOnFailureListener { e ->
-                            Toast.makeText(
-                                this@BookingApprovalRecords,
-                                "Error saving report: ${e.message}",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Log.e("BookingApprovalRecords", "Error saving report: ${e.message}")
                         }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(
-                        this@BookingApprovalRecords,
-                        "Failed fetching user name: ${error.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Log.e("BookingApprovalRecords", "Failed fetching user name: ${error.message}")
                 }
             })
     }
-
-
-
 }

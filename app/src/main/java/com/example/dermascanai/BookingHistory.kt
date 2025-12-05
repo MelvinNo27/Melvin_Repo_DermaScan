@@ -96,6 +96,11 @@ class BookingHistory : AppCompatActivity() {
             currentFilter = "cancelled"
             applyFilter()
         }
+
+        binding.completedFilterChip.setOnClickListener {
+            currentFilter = "completed"
+            applyFilter()
+        }
         binding.approvedFilterChip.setOnClickListener {
             currentFilter = "approved"
             applyFilter()
@@ -142,6 +147,15 @@ class BookingHistory : AppCompatActivity() {
                 })
                 if (filteredAppointmentList.isEmpty()) {
                     binding.emptyStateApprovedLayout.visibility = View.VISIBLE
+                }
+            }
+            "completed" -> {  // New dedicated completed filter
+                filteredAppointmentList.addAll(appointmentList.filter {
+                    it.status.lowercase() == "completed"
+                })
+                if (filteredAppointmentList.isEmpty()) {
+                    // You may want to add a dedicated empty state for completed
+                    binding.emptyStateLayout.visibility = View.VISIBLE
                 }
             }
             "ongoing" -> {

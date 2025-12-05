@@ -8,112 +8,262 @@
     android:layout_height="match_parent"
     tools:context=".MessageMe">
 
-    <ImageView
-        android:id="@+id/backBTN"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:src="@drawable/back_arrow"
-        android:layout_margin="10dp"
-        android:clickable="true"
-        app:layout_constraintStart_toStartOf="parent"
+    <!-- Gradient Background Overlay -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:background="@drawable/message_background"
+        android:alpha="0.05"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:layout_marginTop="5dp"
-        android:id="@+id/linearLayout3"
-        android:layout_width="wrap_content"
+    <!-- Glassmorphic Header -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/headerCard"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_margin="12dp"
+        app:cardCornerRadius="25dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="#FAFAFA"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_marginEnd="5dp"
-            app:cardCornerRadius="25dp"
-            app:cardBackgroundColor="@color/white"
-            android:background="@drawable/bg_rounded"
-            app:layout_constraintBottom_toBottomOf="@+id/textView46"
-            app:layout_constraintEnd_toStartOf="@+id/textView46"
-            app:layout_constraintTop_toTopOf="@+id/textView46">
-
-        <ImageView
-            android:id="@+id/profile"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/default_profile" />
+            android:layout_height="wrap_content"
+            android:padding="12dp">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/backButtonCard"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                app:cardCornerRadius="22dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardElevation="4dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ImageView
+                    android:id="@+id/backBTN"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/back_arrow"
+                    android:clickable="true"
+                    android:layout_gravity="center"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="#2C2C2C" />
+
+            </androidx.cardview.widget.CardView>
+
+            <LinearLayout
+                android:id="@+id/linearLayout3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:background="@drawable/bg_rounded"
+                android:backgroundTint="#F0F0F0"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_marginEnd="12dp"
+                    app:cardCornerRadius="100dp"
+                    app:cardElevation="6dp"
+                    app:cardBackgroundColor="@color/white">
+
+                    <ImageView
+                        android:id="@+id/profile"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/default_profile" />
+
+                </androidx.cardview.widget.CardView>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textView46"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Message"
+                        android:textColor="#1A1A1A"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.02" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Active now"
+                        android:textColor="@color/main_green"
+                        android:textSize="11sp"
+                        android:layout_marginTop="2dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
 
-
-    <TextView
-            android:id="@+id/textView46"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Message"
-            android:layout_gravity="center_vertical"
-            android:textColor="@color/black"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-
+    <!-- Messages Container with Modern Design -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView5"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="15dp"
-        app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="15dp"
-        app:contentPadding="15dp"
-        app:layout_constraintBottom_toTopOf="@+id/messageText"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardBackgroundColor="#FAFAFA"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="6dp"
+        app:contentPadding="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/inputContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
+        app:layout_constraintTop_toBottomOf="@+id/headerCard">
+
+        <!-- Inner shadow effect -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:drawable/dialog_holo_light_frame"
+            android:alpha="0.1" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycleView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:scrollbars="none"
+            android:overScrollMode="never" />
+
     </androidx.cardview.widget.CardView>
 
-    <ImageView
-        android:id="@+id/attachFile"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:src="@drawable/ic_clip"
-
-        app:layout_constraintBottom_toBottomOf="@+id/messageText"
-        app:layout_constraintStart_toStartOf="@+id/cardView5"
-        app:layout_constraintTop_toTopOf="@+id/messageText"
-        app:tint="@color/main_green" />
-
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/messageText"
-        android:layout_width="0dp"
+    <!-- Premium Input Container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/inputContainer"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:background="@drawable/bg_rounded"
-        android:hint="Type Here..."
-        android:padding="12dp"
-        android:textSize="15sp"
-        android:layout_marginStart="10dp"
-        app:layout_constraintBottom_toBottomOf="@+id/send"
-        app:layout_constraintEnd_toStartOf="@+id/send"
-        app:layout_constraintStart_toEndOf="@+id/attachFile"
-        app:layout_constraintTop_toTopOf="@+id/send" />
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="20dp"
+        android:paddingTop="12dp"
+        android:background="@color/white"
+        android:elevation="12dp"
+        app:layout_constraintBottom_toBottomOf="parent">
 
-    <ImageView
-        android:id="@+id/send"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:layout_marginEnd="15dp"
-        android:layout_marginBottom="15dp"
-        android:src="@drawable/ic_send"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <!-- Attach File Button with Ripple -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/attachFileCard"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:cardCornerRadius="25dp"
+            app:cardBackgroundColor="#E8F5E9"
+            app:cardElevation="4dp"
+            android:clickable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:id="@+id/attachFile"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_clip"
+                android:rotation="-45"
+                app:tint="@color/main_green" />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Message Input with Premium Style -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/messageInputCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            app:cardCornerRadius="28dp"
+            app:cardBackgroundColor="#F5F5F5"
+            app:cardElevation="2dp"
+            app:layout_constraintStart_toEndOf="@+id/attachFileCard"
+            app:layout_constraintEnd_toStartOf="@+id/sendCard"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/messageText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="Type Here..."
+                    android:textColorHint="#B0B0B0"
+                    android:textColor="#1A1A1A"
+                    android:textSize="15sp"
+                    android:maxLines="5"
+                    android:scrollbars="vertical"
+                    android:fontFamily="sans-serif"
+                    android:lineSpacingExtra="2dp"
+                    android:inputType="textCapSentences|textMultiLine" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Send Button with Gradient Effect -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/sendCard"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:cardCornerRadius="25dp"
+            app:cardBackgroundColor="@color/main_green"
+            app:cardElevation="8dp"
+            android:clickable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:id="@+id/send"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_send"
+                android:rotation="-45"
+                app:tint="@color/white" />
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -80,7 +80,43 @@
     <color name="status_cancelled">#FF6D00</color>
     <color name="status_ongoing">#2962FF</color>
 
+    <!-- Primary Colors -->
+    <color name="primary">#2196F3</color>
+    <color name="primary_dark">#1976D2</color>
+    <color name="accent">#FF4081</color>
 
+    <!-- Text Colors -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_tertiary">#9E9E9E</color>
+
+    <!-- Background Colors -->
+    <color name="card_background">#F5F5F5</color>
+    <color name="dialog_background">#FFFFFF</color>
+
+    <!-- Border Colors -->
+    <color name="card_stroke">#E0E0E0</color>
+    <color name="button_stroke">#BDBDBD</color>
+    <color name="divider">#EEEEEE</color>
+
+    <!-- Icon Colors -->
+    <color name="icon_tint">#616161</color>
+
+    <!-- Status Colors - Confirmed -->
+    <color name="status_confirmed_bg">#E8F5E9</color>
+    <color name="status_confirmed_text">#2E7D32</color>
+
+    <!-- Status Colors - Pending -->
+    <color name="status_pending_bg">#FFF3E0</color>
+    <color name="status_pending_text">#EF6C00</color>
+
+    <!-- Status Colors - Cancelled -->
+    <color name="status_cancelled_bg">#FFEBEE</color>
+    <color name="status_cancelled_text">#C62828</color>
+
+    <!-- Status Colors - Completed -->
+    <color name="status_completed_bg">#E3F2FD</color>
+    <color name="status_completed_text">#1565C0</color>
 
 
 
