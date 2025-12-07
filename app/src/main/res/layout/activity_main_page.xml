@@ -3,216 +3,368 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
-    android:background="@color/white"
-    android:backgroundTint="@color/white"
+    android:background="#F8F9FA"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainPage">
 
-    <ImageView
-        android:id="@+id/reportScan"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_margin="15dp"
-        android:visibility="gone"
-        android:src="@drawable/report_svgrepo_com"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/backBTN"
-        android:layout_width="18dp"
-        android:layout_height="18dp"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="15dp"
-        android:background="@drawable/back_arrow"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/imageView8"
-        android:layout_width="180dp"
-        android:layout_height="40dp"
-        android:src="@drawable/derma_scan"
-        android:layout_marginTop="15dp"
+    <!-- Top Bar Shadow -->
+    <View
+        android:id="@+id/topBarShadow"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:background="@android:drawable/dialog_holo_light_frame"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/topBarContainer" />
+
+    <!-- Top Bar Container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topBarContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:elevation="4dp"
+        android:paddingVertical="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/backBTN"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/back_arrow"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/imageView8"
+            android:layout_width="180dp"
+            android:layout_height="40dp"
+            android:src="@drawable/derma_scan"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/reportScan"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="2dp"
+            android:src="@drawable/report_svgrepo_com"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ScrollView
         android:id="@+id/scrollView2"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="16dp"
         android:background="@color/white"
-        android:backgroundTint="@color/white"
+        android:backgroundTint="#F8F9FA"
+        android:fillViewport="true"
+        android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@+id/scanButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView8">
+        app:layout_constraintTop_toBottomOf="@+id/topBarContainer">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingBottom="24dp">
 
+            <!-- Image Card with Enhanced Design -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView9"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="25dp"
-                app:cardCornerRadius="15dp"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="16dp"
                 app:cardBackgroundColor="@color/white"
-                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <ImageView
-                    android:id="@+id/skinImageView"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:scaleType="fitCenter"
-                    android:layout_margin="5dp"
-                    android:contentDescription="Sample Image"
-                    android:src="@drawable/ic_scan" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
+                    <ImageView
+                        android:id="@+id/skinImageView"
+                        android:layout_width="220dp"
+                        android:layout_height="220dp"
+                        android:background="#F5F5F5"
+                        android:contentDescription="Sample Image"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_scan" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Scanned Image"
+                        android:textColor="#999999"
+                        android:textSize="12sp" />
+                </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:id="@+id/textView42"
-                android:layout_width="wrap_content"
+            <!-- Results Header -->
+            <LinearLayout
+                android:id="@+id/resultsHeader"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:text="Scan Result"
-                android:textColor="@color/black"
-                android:textSize="20sp"
-                android:textStyle="bold"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardView9" />
+                app:layout_constraintTop_toBottomOf="@+id/cardView9">
 
-            <TextView
-                android:id="@+id/textView41"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="25dp"
-                android:text="Disease Type:"
-                android:textColor="@color/black"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView42" />
+                <TextView
+                    android:id="@+id/textView42"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📊 Scan Result"
+                    android:textColor="@color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/resultTextView"
-                android:layout_width="250dp"
+                <ImageView
+                    android:id="@+id/saveScanButton"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginStart="12dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="4dp"
+                    android:src="@drawable/ic_save"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Disease Type Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/diseaseCard"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:hint="Disease Type here"
-                android:textColor="@color/black"
-                android:textSize="15sp"
-                android:textStyle="bold"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="3dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView41" />
+                app:layout_constraintTop_toBottomOf="@+id/resultsHeader">
 
-            <TextView
-                android:id="@+id/detailBtn"
-                android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="4dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginEnd="12dp"
+                            android:background="#2196F3" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="🔬"
+                                    android:textSize="20sp" />
+
+                                <TextView
+                                    android:id="@+id/textView41"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:text="Disease Type"
+                                    android:textColor="@color/black"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/resultTextView"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:hint="Disease Type here"
+                                android:lineSpacingExtra="2dp"
+                                android:textColor="#424242"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/detailBtn"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:padding="8dp"
+                                android:text="View more details →"
+                                android:textColor="@color/blue"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Remedy Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/remedyCard"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="View more details"
-                android:textColor="@color/blue"
-                android:clickable="true"
-                android:textStyle="bold"
-                android:visibility="gone"
-                android:layout_marginTop="5dp"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="3dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/resultTextView" />
+                app:layout_constraintTop_toBottomOf="@+id/diseaseCard">
 
-            <TextView
-                android:id="@+id/text2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="25dp"
-                android:layout_marginTop="5dp"
-                android:text="Suggested Remedy:"
-                android:textColor="@color/black"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/detailBtn" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-            <TextView
-                android:id="@+id/remedyTextView"
-                android:layout_width="250dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:hint="Suggested Remedy Here"
-                android:textColor="@color/black"
-                android:textSize="15sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/text2" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/saveScanButton"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_save"
-                android:visibility="gone"
-                android:layout_marginStart="10dp"
-                app:layout_constraintBottom_toBottomOf="@+id/textView42"
-                app:layout_constraintStart_toEndOf="@+id/textView42"
-                app:layout_constraintTop_toTopOf="@+id/textView42" />
+                        <TextView
+                            android:layout_width="4dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginEnd="12dp"
+                            android:background="#4CAF50" />
 
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="💊"
+                                    android:textSize="20sp" />
+
+                                <TextView
+                                    android:id="@+id/text2"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:text="Suggested Remedy"
+                                    android:textColor="@color/black"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/remedyTextView"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:hint="Suggested Remedy Here"
+                                android:lineSpacingExtra="4dp"
+                                android:textColor="#424242"
+                                android:textSize="15sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Clinic Section Header -->
             <TextView
                 android:id="@+id/textClinic"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="You can visit one of our partnered Clinic"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="24dp"
+                android:text="🏥 Partnered Clinics Near You"
                 android:textColor="@color/black"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/remedyTextView" />
+                app:layout_constraintTop_toBottomOf="@+id/remedyCard" />
 
+            <!-- Clinic RecyclerView Card -->
             <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                app:cardCornerRadius="20dp"
-                android:layout_margin="15dp"
+                android:id="@+id/clinicCardView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="12dp"
+                android:elevation="4dp"
                 android:visibility="visible"
-                android:elevation="8dp"
+                app:cardCornerRadius="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textClinic"
-                >
+                app:layout_constraintTop_toBottomOf="@+id/textClinic">
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/nerbyClinic"
                     android:layout_width="match_parent"
                     android:layout_height="240dp"
-
-                    android:padding="15dp"
-
-                    />
-
+                    android:background="@color/white"
+                    android:clipToPadding="false"
+                    android:padding="12dp" />
             </androidx.cardview.widget.CardView>
-
-
-
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <!-- Loading Progress Overlay -->
     <FrameLayout
         android:id="@+id/progressContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#80000000"
+        android:clickable="true"
+        android:focusable="true"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -223,31 +375,60 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:elevation="8dp"
-            app:cardCornerRadius="15dp">
+            android:elevation="12dp"
+            app:cardCornerRadius="20dp">
 
-            <pl.droidsonroids.gif.GifImageView
-                android:id="@+id/animatedProgressBar"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/lg_loading" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <pl.droidsonroids.gif.GifImageView
+                    android:id="@+id/animatedProgressBar"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/lg_loading" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Analyzing..."
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Please wait"
+                    android:textColor="#666666"
+                    android:textSize="13sp" />
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
-
     </FrameLayout>
 
+    <!-- Floating Action Button with Enhanced Design -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/scanButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
+        android:layout_marginBottom="20dp"
         android:backgroundTint="@color/main_green"
         android:elevation="12dp"
         android:src="@drawable/ic_scan_white"
         android:tint="@android:color/white"
         android:translationZ="16dp"
-        android:layout_marginBottom="15dp"
+        app:borderWidth="0dp"
+        app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:rippleColor="#80FFFFFF" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

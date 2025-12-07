@@ -153,9 +153,7 @@
             }
 
             binding.derma.setOnClickListener {
-                val intent = Intent(this, UserPage::class.java)
-                startActivity(intent)
-
+                onBackPressed()
             }
 
             navView.setNavigationItemSelectedListener { menuItem ->

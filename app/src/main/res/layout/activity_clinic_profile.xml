@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@android:color/white">
+    android:background="#F8F9FA"
+    android:scrollbars="none">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
@@ -13,75 +14,77 @@
         android:layout_height="wrap_content"
         tools:context=".ClinicProfileActivity">
 
-        <ImageView
-            android:id="@+id/backBtn"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:clickable="true"
-            android:src="@drawable/back_arrow"
-            android:layout_margin="10dp"
+        <!-- Header Bar with Gradient Background -->
+        <View
+            android:id="@+id/headerBackground"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:background="#D8FDCA"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/backBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/back_arrow"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_margin="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/black" />
 
         <TextView
             android:id="@+id/textViewTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
             android:text="Clinic Profile"
             android:textColor="@color/black"
-            android:textSize="20sp"
+            android:textSize="22sp"
             android:textStyle="bold"
+            android:layout_marginTop="20dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/editProfileBtn"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="@drawable/ic_edit"
-            android:layout_margin="10dp"
+            android:layout_margin="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-        <View
-            android:id="@+id/divider1"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
-            android:background="#DDDDDD"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
 
         <!-- Profile Header Section -->
         <androidx.cardview.widget.CardView
             android:id="@+id/profileHeaderCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp"
-            android:layout_marginTop="15dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
-            app:layout_constraintTop_toBottomOf="@+id/divider1"
+            app:layout_constraintTop_toBottomOf="@+id/headerBackground"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/profilePicCard"
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     app:cardCornerRadius="50dp"
-                    app:cardElevation="4dp"
+                    app:cardElevation="6dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
@@ -100,8 +103,10 @@
                     android:layout_marginStart="16dp"
                     android:text="Clinic Name"
                     android:textColor="@color/black"
-                    android:textSize="22sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
+                    android:maxLines="2"
+                    android:ellipsize="end"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/profilePicCard"
                     app:layout_constraintTop_toTopOf="@+id/profilePicCard" />
@@ -110,15 +115,16 @@
                     android:id="@+id/acceptingPatientsStatus"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="8dp"
                     android:background="@drawable/badge_green"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="2dp"
-                    android:text="Accepting New Patients"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:text="Accepting Patients"
                     android:textColor="@android:color/white"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/displayName"
                     app:layout_constraintTop_toBottomOf="@+id/displayName" />
 
@@ -129,7 +135,8 @@
                     android:layout_marginTop="8dp"
                     android:text="Clinic tagline will appear here..."
                     android:textStyle="italic"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
+                    android:textColor="#666666"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="@+id/acceptingPatientsStatus"
                     app:layout_constraintTop_toBottomOf="@+id/acceptingPatientsStatus" />
@@ -141,10 +148,10 @@
             android:id="@+id/clinicInfoCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp"
-            android:layout_marginTop="15dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:layout_constraintTop_toBottomOf="@+id/profileHeaderCard"
             app:layout_constraintStart_toStartOf="parent"
@@ -154,120 +161,296 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Clinic Information"
-                    android:textColor="@color/black"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp"/>
+                android:padding="20dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <FrameLayout
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="#E3F2FD">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_profile2a_g"
+                            app:tint="#2196F3" />
+                    </FrameLayout>
 
                     <TextView
-                        android:layout_width="120dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Contact:"
+                        android:layout_marginStart="12dp"
+                        android:text="Clinic Information"
                         android:textColor="@color/black"
+                        android:textSize="18sp"
                         android:textStyle="bold"/>
-
-                    <TextView
-                        android:id="@+id/displayContact"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Not specified"
-                        android:textColor="@color/black"/>
                 </LinearLayout>
 
+                <!-- Contact Info Item -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                    android:gravity="center_vertical"
+                    android:paddingVertical="10dp">
 
-                    <TextView
-                        android:layout_width="120dp"
-                        android:layout_height="wrap_content"
-                        android:text="Email:"
-                        android:textColor="@color/black"
-                        android:textStyle="bold"/>
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="#E8F5E9">
 
-                    <TextView
-                        android:id="@+id/displayEmail"
-                        android:layout_width="match_parent"
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/phone_svgrepo_com"
+                            app:tint="#4CAF50" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Not specified"
-                        android:textColor="@color/black"/>
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Contact"
+                            android:textColor="#999999"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/displayContact"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Not specified"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
                 </LinearLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:layout_marginVertical="4dp"/>
+
+                <!-- Email Info Item -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                    android:gravity="center_vertical"
+                    android:paddingVertical="10dp">
 
-                    <TextView
-                        android:layout_width="120dp"
-                        android:layout_height="wrap_content"
-                        android:text="Address:"
-                        android:textColor="@color/black"
-                        android:textStyle="bold"/>
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="#FFF3E0">
 
-                    <TextView
-                        android:id="@+id/displayAddress"
-                        android:layout_width="match_parent"
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_envelope"
+                            app:tint="#FF9800" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Not specified"
-                        android:textColor="@color/black"/>
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Email"
+                            android:textColor="#999999"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/displayEmail"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Not specified"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
                 </LinearLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:layout_marginVertical="4dp"/>
+
+                <!-- Address Info Item -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                    android:gravity="top"
+                    android:paddingVertical="10dp">
 
-                    <TextView
-                        android:layout_width="120dp"
-                        android:layout_height="wrap_content"
-                        android:text="Operating Days:"
-                        android:textColor="@color/black"
-                        android:textStyle="bold"/>
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="#FFEBEE">
 
-                    <TextView
-                        android:id="@+id/displayOperatingDays"
-                        android:layout_width="match_parent"
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/location_pin_map_svgrepo_com"
+                            app:tint="#F44336" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Not specified"
-                        android:textColor="@color/black"/>
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Address"
+                            android:textColor="#999999"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/displayAddress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Not specified"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
                 </LinearLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:layout_marginVertical="4dp"/>
+
+                <!-- Operating Days Info Item -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                    android:gravity="center_vertical"
+                    android:paddingVertical="10dp">
 
-                    <TextView
-                        android:layout_width="120dp"
-                        android:layout_height="wrap_content"
-                        android:text="Hours:"
-                        android:textColor="@color/black"
-                        android:textStyle="bold"/>
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="#F3E5F5">
 
-                    <TextView
-                        android:id="@+id/displayOperatingHours"
-                        android:layout_width="match_parent"
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_calendar"
+                            app:tint="#9C27B0" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Not specified"
-                        android:textColor="@color/black"/>
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Operating Days"
+                            android:textColor="#999999"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/displayOperatingDays"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Not specified"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:layout_marginVertical="4dp"/>
+
+                <!-- Operating Hours Info Item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingVertical="10dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="#E1F5FE">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_clock"
+                            app:tint="#03A9F4" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Operating Hours"
+                            android:textColor="#999999"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/displayOperatingHours"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Not specified"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -277,10 +460,10 @@
             android:id="@+id/aboutCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp"
-            android:layout_marginTop="15dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:layout_constraintTop_toBottomOf="@+id/clinicInfoCard"
             app:layout_constraintStart_toStartOf="parent"
@@ -290,25 +473,47 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="About Our Clinic"
-                    android:textColor="@color/black"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
 
+                    <FrameLayout
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="#FFF3E0">
 
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_profile2a_g"
+                            app:tint="#FF9800" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="About Our Clinic"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/displayAbout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Clinic description will appear here..."
-                    android:textColor="@color/black"/>
+                    android:textColor="#666666"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -317,10 +522,10 @@
             android:id="@+id/servicesCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp"
-            android:layout_marginTop="15dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:layout_constraintTop_toBottomOf="@+id/aboutCard"
             app:layout_constraintStart_toStartOf="parent"
@@ -330,22 +535,43 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Services Offered"
-                    android:textColor="@color/black"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <FrameLayout
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="#E8F5E9">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_patientrecords"
+                            app:tint="#4CAF50" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="Services Offered"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/servicesRecyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"/>
+                    android:layout_height="wrap_content"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -354,10 +580,10 @@
             android:id="@+id/dermatologistsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp"
-            android:layout_marginTop="15dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:layout_constraintTop_toBottomOf="@+id/servicesCard"
             app:layout_constraintStart_toStartOf="parent"
@@ -367,22 +593,43 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Our Dermatologists"
-                    android:textColor="@color/black"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <FrameLayout
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="#E3F2FD">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_profile2a_g"
+                            app:tint="#2196F3" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="Our Dermatologists"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/dermatologistsRecyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"/>
+                    android:layout_height="wrap_content"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -391,11 +638,11 @@
             android:id="@+id/verificationCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp"
-            android:layout_marginTop="15dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="24dp"
-            app:cardCornerRadius="8dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:layout_constraintTop_toBottomOf="@+id/dermatologistsCard"
             app:layout_constraintStart_toStartOf="parent"
@@ -406,24 +653,36 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp"
+                android:background="@android:drawable/dialog_holo_light_frame"
+                android:backgroundTint="#F0F8FF">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
 
-                    <ImageView
-                        android:id="@+id/verifiedBadge"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/badge_green"
-                        android:layout_marginEnd="8dp"/>
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="#E8F5E9">
+
+                        <ImageView
+                            android:id="@+id/verifiedBadge"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/badge_green"
+                            app:tint="#4CAF50"/>
+                    </FrameLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
                         android:text="Verified Clinic"
                         android:textColor="@color/black"
                         android:textSize="18sp"
@@ -434,33 +693,57 @@
                     android:id="@+id/displayVerificationType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:text="Verification: Business Permits &amp; Licenses"
-                    android:textColor="@color/black"/>
+                    android:textColor="#666666"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="16dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="VERIFICATION DOCUMENTS"
+                    android:textColor="#999999"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05"
+                    android:layout_marginBottom="12dp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                    android:orientation="horizontal">
 
-                    <ImageView
-                        android:id="@+id/birDocument"
+                    <androidx.cardview.widget.CardView
                         android:layout_width="0dp"
-                        android:layout_height="100dp"
+                        android:layout_height="120dp"
                         android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/verification_placeholder"/>
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp">
 
-                    <ImageView
-                        android:id="@+id/permitDocument"
+                        <ImageView
+                            android:id="@+id/birDocument"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/verification_placeholder"/>
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
                         android:layout_width="0dp"
-                        android:layout_height="100dp"
+                        android:layout_height="120dp"
                         android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/verification_placeholder"/>
+                        android:layout_marginStart="8dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp">
+
+                        <ImageView
+                            android:id="@+id/permitDocument"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/verification_placeholder"/>
+                    </androidx.cardview.widget.CardView>
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>

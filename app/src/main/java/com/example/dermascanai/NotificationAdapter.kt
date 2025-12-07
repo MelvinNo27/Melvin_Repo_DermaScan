@@ -12,7 +12,7 @@ import com.google.firebase.database.FirebaseDatabase
 
 class NotificationAdapter(
     private val context: Context,
-    private var notifications: List<Notification> // ✅ use Notification instead of String
+    private var notifications: List<Notification>
 ) : RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder>() {
 
     inner class NotificationViewHolder(val binding: ItemNotificationBinding) :
@@ -23,7 +23,7 @@ class NotificationAdapter(
                 handleNotificationClick(notif)
             }
         }
-        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationViewHolder {
         val binding = ItemNotificationBinding.inflate(LayoutInflater.from(context), parent, false)
@@ -39,7 +39,7 @@ class NotificationAdapter(
 
     fun updateNotifications(newNotifications: List<Notification>) {
         notifications = newNotifications
-        notifyDataSetChanged()  // Notify the adapter that the data has changed
+        notifyDataSetChanged()
     }
 
     private fun handleNotificationClick(notification: Notification) {
@@ -67,21 +67,28 @@ class NotificationAdapter(
             }
             "message" -> {
                 checkAccountType(currentUserId) { accountType ->
+                    val intent = Intent(context, MessageMe::class.java)
+
                     when (accountType) {
                         "derma" -> {
-                            val intent = Intent(context, MessageMe::class.java)
-                            intent.putExtra("senderId", notification.toUserId)
-                            context.startActivity(intent)
+                            // Derma is receiving a message FROM a user
+                            // So we want to open chat with the sender (fromUserId)
+                            intent.putExtra("receiverId", notification.fromUserId)
+                            //intent.putExtra("receiverName", notification.fromUserName ?: "User")
                         }
                         "user" -> {
-                            val intent = Intent(context, MessageMe::class.java)
+                            // User is receiving a message FROM a derma
+                            // So we want to open chat with the sender (fromUserId)
                             intent.putExtra("receiverId", notification.fromUserId)
-                            context.startActivity(intent)
+                            //intent.putExtra("receiverName", notification.fromUserName ?: "Clinic")
                         }
                         else -> {
                             Toast.makeText(context, "Unknown account type", Toast.LENGTH_SHORT).show()
+                            return@checkAccountType
                         }
                     }
+
+                    context.startActivity(intent)
                 }
             }
 
@@ -90,6 +97,7 @@ class NotificationAdapter(
                 intent.putExtra("postId", notification.postId)
                 context.startActivity(intent)
             }
+
             "reply" -> {
                 val intent = Intent(context, BlogView::class.java)
                 intent.putExtra("postId", notification.postId)
@@ -101,6 +109,7 @@ class NotificationAdapter(
             }
         }
     }
+
     private fun checkAccountType(userId: String, callback: (String) -> Unit) {
         val db = FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/").reference
 
@@ -116,9 +125,12 @@ class NotificationAdapter(
                     } else {
                         callback("unknown")
                     }
+                }.addOnFailureListener {
+                    callback("unknown")
                 }
             }
+        }.addOnFailureListener {
+            callback("unknown")
         }
     }
-
 }

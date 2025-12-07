@@ -87,7 +87,10 @@
         <activity
             android:name=".BookingApprovalRecords"
             android:exported="false"
-            android:screenOrientation="portrait" /> <!-- <activity -->
+            android:screenOrientation="portrait" />
+
+
+        <!-- <activity -->
         <!-- android:name=".ScanDetailActivity" -->
         <!-- android:exported="false" -->
         <!-- android:screenOrientation="portrait" /> -->

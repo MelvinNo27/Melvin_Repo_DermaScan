@@ -1,6 +1,7 @@
 package com.example.dermascanai
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
@@ -34,6 +35,10 @@ class ScanDetailActivity : AppCompatActivity() {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
             finish()
             return
+        }
+
+        binding.backBtn.setOnClickListener {
+            onBackPressed()
         }
 
         val db = FirebaseDatabase.getInstance("https://dermascanai-2d7a1-default-rtdb.asia-southeast1.firebasedatabase.app/")

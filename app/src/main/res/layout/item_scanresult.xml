@@ -1,19 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    android:elevation="4dp"
-    android:padding="16dp">
+    android:layout_margin="12dp"
+    android:elevation="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp"
+    app:cardUseCompatPadding="true"
+    android:backgroundTint="@android:color/white">
 
-    <TextView
-        android:id="@+id/textViewScan"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="05/03/2025_14:15.30"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_margin="10dp"
-        android:textColor="@color/black"/>
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_recent_history"
+                android:layout_marginEnd="12dp"
+                android:contentDescription="Scan timestamp icon"
+                app:tint="#4CAF50" />
+
+            <TextView
+                android:id="@+id/textViewScan"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="05/03/2025_14:15.30"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#212121"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.01"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="#E0E0E0"/>
+
+    </LinearLayout>
 
 </androidx.cardview.widget.CardView>
