@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="4dp"
-    android:layout_marginVertical="6dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
+    android:layout_margin="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
     app:strokeWidth="1dp"
-    app:strokeColor="#E0E0E0"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?attr/selectableItemBackground">
+    app:strokeColor="#E0E0E0">
 
     <LinearLayout
+        android:id="@+id/cardContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@drawable/cardbackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground">
 
+        <!-- Status Header -->
         <LinearLayout
             android:id="@+id/statusHeader"
             android:layout_width="match_parent"
@@ -62,310 +63,307 @@
 
         </LinearLayout>
 
-        <!-- Main content area -->
+        <!-- Main Content -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
-            <!-- Clinic/Doctor section with improved layout -->
+            <!-- Clinic Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:orientation="horizontal">
 
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@android:drawable/ic_dialog_map"
-                    android:contentDescription="Clinic icon"
-                    app:tint="@color/blue" />
+                <androidx.cardview.widget.CardView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_marginEnd="12dp"
+                    app:cardCornerRadius="100dp"
+                    app:cardElevation="6dp"
+                    app:cardBackgroundColor="@color/white">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:text="Clinic Name:"
-                    android:textSize="14sp" />
+                    <ImageView
+                        android:id="@+id/clinicIcon"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/default_profile" />
 
-                <TextView
-                    android:id="@+id/textDoctorName"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:text="Skin Care Clinic"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:fontFamily="sans-serif-medium"
-                    tools:text="Dr. Sarah Johnson" />
-
-            </LinearLayout>
-
-            <!-- Service section -->
-            <LinearLayout
-                android:id="@+id/serviceContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:visibility="visible">
-
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:src="@android:drawable/ic_menu_agenda"
-                    android:contentDescription="Service icon"
-                    app:tint="@color/green" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:text="Services:"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/textService"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:text="General Consultation"
-                    android:textSize="14sp"
-                    android:textColor="@color/black"
-                    tools:text="Acne Treatment Consultation" />
-
-            </LinearLayout>
-
-            <!-- Date and Time section with improved styling -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:src="@android:drawable/ic_menu_my_calendar"
-                    android:contentDescription="Date icon"
-                    app:tint="@color/orange" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:text="Date:"
-                    android:textSize="14sp" />
+                </androidx.cardview.widget.CardView>
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/textAppointmentDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CLINIC"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="12sp"
+                        android:letterSpacing="0.1"
+                        android:fontFamily="sans-serif-medium" />
+
+                    <TextView
+                        android:id="@+id/clinicNameTv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/textPrimary"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginTop="4dp"
+                        tools:text="Skin Care Clinic" />
+
+                    <!-- Appointment Date -->
+                    <TextView
+                        android:id="@+id/appointmentDateTv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="November 25, 2024"
                         android:textSize="14sp"
-                        android:textColor="@color/black"
-                        android:textStyle="bold"
-                        tools:text="December 15, 2024" />
-
-                    <TextView
-                        android:id="@+id/textAppointmentTime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="10:00 AM"
-                        android:textSize="12sp"
                         android:textColor="@color/gray"
-                        android:layout_marginTop="2dp"
-                        tools:text="2:30 PM" />
+                        android:layout_marginTop="4dp"
+                        tools:text="December 15, 2024" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Expandable Details Section -->
+            <LinearLayout
+                android:id="@+id/detailsSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="16dp"
+                android:visibility="gone">
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Appointment Time -->
+                <LinearLayout
+                    android:id="@+id/timeContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@android:drawable/ic_menu_recent_history"
+                        android:contentDescription="Time icon"
+                        app:tint="@color/colorAccent" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="TIME"
+                            android:textColor="@color/gray"
+                            android:textSize="11sp"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.05" />
+
+                        <TextView
+                            android:id="@+id/textAppointmentTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="10:00 AM"
+                            android:textSize="15sp"
+                            android:textColor="@color/black"
+                            android:textStyle="bold"
+                            tools:text="2:30 PM" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-                <!-- Time remaining or status badge -->
-                <TextView
-                    android:id="@+id/textTimeRemaining"
-                    android:layout_width="wrap_content"
+                <!-- Service -->
+                <LinearLayout
+                    android:id="@+id/serviceContainer"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_rounded"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="4dp"
-                    android:text="In 5 days"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="visible">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@android:drawable/ic_menu_agenda"
+                        android:contentDescription="Service icon"
+                        app:tint="@color/green" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="SERVICE"
+                            android:textColor="@color/gray"
+                            android:textSize="11sp"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.05" />
+
+                        <TextView
+                            android:id="@+id/textService"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="General Consultation"
+                            android:textSize="15sp"
+                            android:textColor="@color/black"
+                            android:textStyle="bold"
+                            tools:text="Acne Treatment" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Message -->
+                <LinearLayout
+                    android:id="@+id/messageContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/message_background"
+                    android:padding="16dp"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@android:drawable/ic_dialog_email"
+                            android:contentDescription="Message icon"
+                            app:tint="@color/blue" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="MESSAGE"
+                            android:textSize="11sp"
+                            android:textColor="@color/gray"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.05" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/textMessage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="I would like to schedule a consultation."
+                        android:textSize="14sp"
+                        android:textColor="@color/black"
+                        android:lineSpacingExtra="4dp"
+                        tools:text="I need to book an appointment" />
+
+                </LinearLayout>
+
+                <!-- Cancellation Reason -->
+                <LinearLayout
+                    android:id="@+id/cancelReasonContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/message_background"
+                    android:padding="16dp"
+                    android:visibility="gone"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@android:drawable/ic_dialog_alert"
+                            android:contentDescription="Cancel reason icon"
+                            app:tint="@color/red" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="CANCELLATION REASON"
+                            android:textSize="11sp"
+                            android:textColor="@color/red"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.05"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/textCancelReason"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Cancelled due to conflict"
+                        android:textSize="14sp"
+                        android:textColor="@color/red"
+                        android:lineSpacingExtra="4dp"
+                        tools:text="Not available" />
+
+                </LinearLayout>
+
+                <!-- Booking Timestamp -->
+                <TextView
+                    android:id="@+id/textBookingTimestamp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Booked on Nov 20, 2024 at 3:45 PM"
                     android:textSize="11sp"
                     android:textColor="@color/gray"
-                    android:visibility="gone"
-                    tools:text="Tomorrow"
-                    tools:visibility="visible" />
+                    android:gravity="center"
+                    android:fontStyle="italic"
+                    tools:text="Booked 2 hours ago" />
 
             </LinearLayout>
 
-            <!-- Message section with improved styling -->
-            <LinearLayout
-                android:id="@+id/messageContainer"
+
+            <!-- Progress indicator for pending actions -->
+            <ProgressBar
+                android:id="@+id/actionProgressBar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="top">
-
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_marginTop="2dp"
-                    android:src="@android:drawable/ic_dialog_email"
-                    android:contentDescription="Message icon"
-                    app:tint="@color/blue" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginTop="5dp"
-                    android:text="Message:"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/textMessage"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:background="@drawable/message_background"
-                    android:padding="12dp"
-                    android:text="I would like to schedule a consultation for acne treatment. Please let me know the available time slots."
-                    android:textSize="13sp"
-                    android:textColor="@color/black"
-                    android:lineSpacingExtra="2dp"
-                    tools:text="I need to reschedule my appointment due to a work emergency." />
-
-            </LinearLayout>
-
-            <!-- Cancellation Reason section with enhanced styling -->
-            <LinearLayout
-                android:id="@+id/cancelReasonContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="top"
+                android:layout_height="4dp"
                 android:visibility="gone"
-                tools:visibility="visible">
-
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_marginTop="2dp"
-                    android:src="@android:drawable/ic_dialog_alert"
-                    android:contentDescription="Cancel reason icon"
-                    app:tint="@color/red" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginTop="2dp"
-                    android:text="Reason:"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/textCancelReason"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:background="@drawable/message_background"
-                    android:padding="12dp"
-                    android:text="Appointment cancelled due to scheduling conflict"
-                    android:textSize="13sp"
-                    android:textColor="@color/red"
-                    android:lineSpacingExtra="2dp"
-                    tools:text="Not available at the requested time" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/actionButtonsContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal"
-                android:gravity="end"
-                android:visibility="gone"
-                tools:visibility="visible">
-
-                <!-- Secondary action button (e.g., Reschedule) -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSecondaryAction"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:text="Reschedule"
-                    android:textColor="@color/blue"
-                    android:backgroundTint="@android:color/transparent"
-                    app:strokeColor="@color/blue"
-                    app:strokeWidth="1dp"
-                    app:cornerRadius="8dp"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-
-                <!-- Primary action button (Cancel) -->
-                <FrameLayout
-                    android:id="@+id/cancelButtonContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnCancelAppointment"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Cancel"
-                        android:textColor="@android:color/white"
-                        android:backgroundTint="@color/red"
-                        app:cornerRadius="8dp"
-                        app:icon="@android:drawable/ic_menu_close_clear_cancel"
-                        app:iconTint="@android:color/white"
-                        app:iconSize="18dp"
-                        style="@style/Widget.MaterialComponents.Button" />
-
-                </FrameLayout>
-
-            </LinearLayout>
-
-            <!-- Booking timestamp -->
-            <TextView
-                android:id="@+id/textBookingTimestamp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Booked on Nov 20, 2024 at 3:45 PM"
-                android:textSize="11sp"
-                android:textColor="@color/gray"
-                android:gravity="end"
-                android:fontStyle="italic"
-                tools:text="Booked 2 hours ago" />
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:indeterminate="true" />
 
         </LinearLayout>
-
-        <!-- Progress indicator for pending actions -->
-        <ProgressBar
-            android:id="@+id/actionProgressBar"
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:visibility="gone"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:indeterminate="true" />
-
     </LinearLayout>
-
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>

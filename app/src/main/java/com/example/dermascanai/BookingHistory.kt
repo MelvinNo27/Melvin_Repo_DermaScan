@@ -75,9 +75,15 @@ class BookingHistory : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        appointmentAdapter = AppointmentAdapter(filteredAppointmentList) { appointment ->
-            showCancelConfirmationDialog(appointment)
-        }
+        appointmentAdapter = AppointmentAdapter(
+            appointments = filteredAppointmentList,
+            onCardClicked = { appointment ->
+                showAppointmentDetailsDialog(appointment)
+            },
+            onCancelClicked = { appointment ->
+                showCancelConfirmationDialog(appointment)
+            }
+        )
         binding.appointmentsRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.appointmentsRecyclerView.adapter = appointmentAdapter
     }
@@ -110,6 +116,125 @@ class BookingHistory : AppCompatActivity() {
             applyFilter()
         }
     }
+
+    private fun showAppointmentDetailsDialog(appointment: Appointment) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_appointment_details, null)
+
+        // Initialize views
+        val statusHeader = dialogView.findViewById<LinearLayout>(R.id.statusHeader)
+        val statusIcon = dialogView.findViewById<ImageView>(R.id.statusIcon)
+        val statusText = dialogView.findViewById<TextView>(R.id.textStatus)
+        val bookingIdText = dialogView.findViewById<TextView>(R.id.textBookingId)
+        val clinicNameText = dialogView.findViewById<TextView>(R.id.clinicNameTv)
+        val dateText = dialogView.findViewById<TextView>(R.id.appointmentDateTv)
+        val timeText = dialogView.findViewById<TextView>(R.id.textAppointmentTime)
+        val timeContainer = dialogView.findViewById<LinearLayout>(R.id.timeContainer)
+        val serviceText = dialogView.findViewById<TextView>(R.id.textService)
+        val serviceContainer = dialogView.findViewById<LinearLayout>(R.id.serviceContainer)
+        val messageText = dialogView.findViewById<TextView>(R.id.textMessage)
+        val messageContainer = dialogView.findViewById<LinearLayout>(R.id.messageContainer)
+        //val cancelReasonText = dialogView.findViewById<TextView>(R.id.textCancelReason)
+        //val cancelReasonContainer = dialogView.findViewById<LinearLayout>(R.id.cancelReasonContainer)
+        val timestampText = dialogView.findViewById<TextView>(R.id.textBookingTimestamp)
+        val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
+        val closeButton = dialogView.findViewById<Button>(R.id.closeButton)
+
+        // Set data
+        bookingIdText.text = "#${appointment.bookingId.takeLast(5)}"
+        clinicNameText.text = appointment.doctorName
+        dateText.text = appointment.date
+
+        // Time
+        if (appointment.time.isNotEmpty()) {
+            timeContainer.visibility = View.VISIBLE
+            timeText.text = appointment.time
+        } else {
+            timeContainer.visibility = View.GONE
+        }
+
+        // Service
+        if (appointment.service.isNotEmpty()) {
+            serviceContainer.visibility = View.VISIBLE
+            serviceText.text = appointment.service
+        } else {
+            serviceContainer.visibility = View.GONE
+        }
+
+        // Message
+        if (appointment.message.isNotEmpty()) {
+            messageContainer.visibility = View.VISIBLE
+            messageText.text = appointment.message
+        } else {
+            messageContainer.visibility = View.GONE
+        }
+
+//        // Cancellation reason
+//        if (appointment.status.lowercase() == "cancelled" && appointment.cancellationReason?.isNotEmpty() == true) {
+//            cancelReasonContainer.visibility = View.VISIBLE
+//            cancelReasonText.text = appointment.cancellationReason
+//        } else {
+//            cancelReasonContainer.visibility = View.GONE
+//        }
+
+        // Status
+        val status = appointment.status.replaceFirstChar { it.uppercase() }
+        statusText.text = status
+
+        val statusIconRes = when (appointment.status.lowercase()) {
+            "confirmed" -> android.R.drawable.ic_dialog_info
+            "declined" -> android.R.drawable.ic_dialog_alert
+            "cancelled" -> android.R.drawable.ic_menu_close_clear_cancel
+            "completed" -> android.R.drawable.ic_dialog_info
+            "ongoing" -> android.R.drawable.ic_dialog_info
+            else -> android.R.drawable.ic_dialog_info
+        }
+        statusIcon.setImageResource(statusIconRes)
+
+        val (backgroundColor, textColor) = when (appointment.status.lowercase()) {
+            "confirmed" -> Pair(R.color.green, android.R.color.white)
+            "declined" -> Pair(R.color.red, android.R.color.white)
+            "cancelled" -> Pair(R.color.red, android.R.color.white)
+            "completed" -> Pair(R.color.blue, android.R.color.white)
+            "ongoing" -> Pair(R.color.green, android.R.color.white)
+            else -> Pair(R.color.orange, android.R.color.white)
+        }
+        statusHeader.setBackgroundColor(ContextCompat.getColor(this, backgroundColor))
+        statusText.setTextColor(ContextCompat.getColor(this, textColor))
+
+        // Timestamp
+        val timestamp = if (appointment.createdAt > 0) {
+            val dateFormat = SimpleDateFormat("MMM dd, yyyy 'at' h:mm a", Locale.getDefault())
+            "Booked on ${dateFormat.format(Date(appointment.createdAt))}"
+        } else {
+            "Recently booked"
+        }
+        timestampText.text = timestamp
+
+        // Cancel button visibility
+        if (appointment.status.lowercase() == "pending" || appointment.status.lowercase() == "confirmed") {
+            cancelButton.visibility = View.VISIBLE
+        } else {
+            cancelButton.visibility = View.GONE
+        }
+
+        // Create dialog
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        // Button listeners
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+            showCancelConfirmationDialog(appointment)
+        }
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
     private fun applyFilter() {
         filteredAppointmentList.clear()
         binding.emptyStateLayout.visibility = View.GONE
@@ -143,18 +268,17 @@ class BookingHistory : AppCompatActivity() {
             }
             "approved" -> {
                 filteredAppointmentList.addAll(appointmentList.filter {
-                    it.status.lowercase() == "confirmed" || it.status.lowercase() == "completed"
+                    it.status.lowercase() == "confirmed"
                 })
                 if (filteredAppointmentList.isEmpty()) {
                     binding.emptyStateApprovedLayout.visibility = View.VISIBLE
                 }
             }
-            "completed" -> {  // New dedicated completed filter
+            "completed" -> {
                 filteredAppointmentList.addAll(appointmentList.filter {
                     it.status.lowercase() == "completed"
                 })
                 if (filteredAppointmentList.isEmpty()) {
-                    // You may want to add a dedicated empty state for completed
                     binding.emptyStateLayout.visibility = View.VISIBLE
                 }
             }
@@ -177,6 +301,7 @@ class BookingHistory : AppCompatActivity() {
         appointmentAdapter.notifyDataSetChanged()
         Log.d("BookingHistory", "Applied filter: $currentFilter, showing ${filteredAppointmentList.size} appointments")
     }
+
     private fun loadAppointments() {
         val currentUser = auth.currentUser ?: run {
             Toast.makeText(this, "Please login to view your appointments", Toast.LENGTH_SHORT).show()
@@ -197,14 +322,13 @@ class BookingHistory : AppCompatActivity() {
             .child(userId)
             .child("bookings")
 
-        userBookingsRef.keepSynced(true) // Keep this data synced locally
+        userBookingsRef.keepSynced(true)
         userBookingsListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 appointmentList.clear()
                 if (snapshot.exists()) {
                     for (bookingSnapshot in snapshot.children) {
                         try {
-                            // Create appointment from booking data
                             val bookingId = bookingSnapshot.child("bookingId").getValue(String::class.java) ?: ""
                             val patientEmail = bookingSnapshot.child("patientEmail").getValue(String::class.java) ?: ""
                             val clinicName = bookingSnapshot.child("clinicName").getValue(String::class.java) ?: ""
@@ -219,9 +343,9 @@ class BookingHistory : AppCompatActivity() {
                             val appointment = Appointment(
                                 bookingId = bookingId,
                                 patientEmail = patientEmail,
-                                doctorName = clinicName, // Map clinicName to doctorName for display
+                                doctorName = clinicName,
                                 date = date,
-                                time = time, // Now we're using time from the database
+                                time = time,
                                 service = service,
                                 message = message,
                                 status = status,
@@ -259,6 +383,7 @@ class BookingHistory : AppCompatActivity() {
         binding.emptyStateCancelledLayout.visibility = View.GONE
         binding.emptyStateApprovedLayout.visibility = View.GONE
     }
+
     private fun showCancelConfirmationDialog(appointment: Appointment) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_cancel_appointment, null)
         val reasonEditText = dialogView.findViewById<EditText>(R.id.editTextCancelReason)
@@ -274,6 +399,7 @@ class BookingHistory : AppCompatActivity() {
             .setNegativeButton("No", null)
             .show()
     }
+
     private fun cancelAppointment(appointment: Appointment, cancelReason: String) {
         val currentUser = auth.currentUser ?: run {
             Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
@@ -285,7 +411,6 @@ class BookingHistory : AppCompatActivity() {
 
         binding.progressBar.visibility = View.VISIBLE
 
-        // Firebase references
         val userBookingRef = database.getReference("userInfo")
             .child(userId)
             .child("bookings")
@@ -308,7 +433,6 @@ class BookingHistory : AppCompatActivity() {
             "cancellationReason" to cancelReason
         )
 
-        // Update all booking paths together
         val tasks = listOf(
             userBookingRef.updateChildren(updates),
             clinicBookingRef.updateChildren(updates),
@@ -322,7 +446,6 @@ class BookingHistory : AppCompatActivity() {
                 Toast.makeText(this, "Appointment cancelled successfully", Toast.LENGTH_SHORT).show()
                 binding.progressBar.visibility = View.GONE
 
-                // Only restore slot if it was a confirmed booking
                 if (appointment.status.lowercase() == "confirmed") {
                     val scheduleRef = database.reference
                         .child("clinicInfo")
@@ -360,11 +483,9 @@ class BookingHistory : AppCompatActivity() {
             }
     }
 
-
-
     private var autoRefreshRunnable: Runnable? = null
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
-    private val AUTO_REFRESH_INTERVAL = 30000L // 30 seconds
+    private val AUTO_REFRESH_INTERVAL = 30000L
 
     private fun setupAutoRefresh() {
         autoRefreshRunnable = object : Runnable {
@@ -377,6 +498,7 @@ class BookingHistory : AppCompatActivity() {
         }
         handler.postDelayed(autoRefreshRunnable!!, AUTO_REFRESH_INTERVAL)
     }
+
     private fun updateConnectionStatus() {
         val connectedRef = database.getReference(".info/connected")
         connectedRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -394,12 +516,14 @@ class BookingHistory : AppCompatActivity() {
             }
         })
     }
+
     override fun onResume() {
         super.onResume()
         if (::userBookingsRef.isInitialized && userBookingsListener == null) {
             loadAppointments()
         }
     }
+
     override fun onDestroy() {
         super.onDestroy()
         if (userBookingsListener != null && ::userBookingsRef.isInitialized) {
@@ -408,29 +532,20 @@ class BookingHistory : AppCompatActivity() {
         }
         autoRefreshRunnable?.let { handler.removeCallbacks(it) }
     }
+
     inner class AppointmentAdapter(
         private val appointments: List<Appointment>,
+        private val onCardClicked: (Appointment) -> Unit,
         private val onCancelClicked: (Appointment) -> Unit
     ) : RecyclerView.Adapter<AppointmentAdapter.AppointmentViewHolder>() {
         inner class AppointmentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val cardContainer: LinearLayout = itemView.findViewById(R.id.cardContainer)
             val statusHeader: LinearLayout = itemView.findViewById(R.id.statusHeader)
             val statusIcon: ImageView = itemView.findViewById(R.id.statusIcon)
             val appointmentStatus: TextView = itemView.findViewById(R.id.textStatus)
-            val bookingId: TextView? = itemView.findViewById(R.id.textBookingId)
-            val doctorName: TextView = itemView.findViewById(R.id.textDoctorName)
-            val appointmentDate: TextView = itemView.findViewById(R.id.textAppointmentDate)
-            val appointmentTime: TextView? = itemView.findViewById(R.id.textAppointmentTime)
-            val serviceText: TextView? = itemView.findViewById(R.id.textService)
-            val serviceContainer: LinearLayout? = itemView.findViewById(R.id.serviceContainer)
-            val messageContainer: LinearLayout? = itemView.findViewById(R.id.messageContainer)
-            val messageText: TextView = itemView.findViewById(R.id.textMessage)
-            val cancelButtonContainer: FrameLayout = itemView.findViewById(R.id.cancelButtonContainer)
-            val cancelButton: Button = itemView.findViewById(R.id.btnCancelAppointment)
-            val cancelReasonContainer: View? = itemView.findViewById(R.id.cancelReasonContainer)
-            val cancelReasonText: TextView? = itemView.findViewById(R.id.textCancelReason)
-            val actionButtonsContainer: LinearLayout? = itemView.findViewById(R.id.actionButtonsContainer)
-            val bookingTimestamp: TextView? = itemView.findViewById(R.id.textBookingTimestamp)
-            val timeRemaining: TextView? = itemView.findViewById(R.id.textTimeRemaining)
+            val bookingId: TextView = itemView.findViewById(R.id.textBookingId)
+            val clinicName: TextView = itemView.findViewById(R.id.clinicNameTv)
+            val appointmentDate: TextView = itemView.findViewById(R.id.appointmentDateTv)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppointmentViewHolder {
@@ -440,32 +555,14 @@ class BookingHistory : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: AppointmentViewHolder, position: Int) {
             val appointment = appointments[position]
-            holder.bookingId?.let {
-                it.text = "#${appointment.bookingId.takeLast(5)}"
-            }
 
-            holder.doctorName.text = appointment.doctorName
+            holder.bookingId.text = "#${appointment.bookingId.takeLast(5)}"
+            holder.clinicName.text = appointment.doctorName
             holder.appointmentDate.text = appointment.date
-            holder.appointmentTime?.let { timeView ->
-                if (appointment.time.isNotEmpty()) {
-                    timeView.visibility = View.VISIBLE
-                    timeView.text = appointment.time
-                } else {
-                    timeView.visibility = View.GONE
-                }
-            }
-            holder.serviceText?.let { serviceView ->
-                if (appointment.service.isNotEmpty()) {
-                    holder.serviceContainer?.visibility = View.VISIBLE
-                    serviceView.visibility = View.VISIBLE
-                    serviceView.text = appointment.service
-                } else {
-                    holder.serviceContainer?.visibility = View.GONE
-                    serviceView.visibility = View.GONE
-                }
-            }
+
             val status = appointment.status.replaceFirstChar { it.uppercase() }
             holder.appointmentStatus.text = status
+
             val statusIconRes = when (appointment.status.lowercase()) {
                 "confirmed" -> android.R.drawable.ic_dialog_info
                 "declined" -> android.R.drawable.ic_dialog_alert
@@ -486,87 +583,14 @@ class BookingHistory : AppCompatActivity() {
             }
             holder.statusHeader.setBackgroundColor(ContextCompat.getColor(this@BookingHistory, backgroundColor))
             holder.appointmentStatus.setTextColor(ContextCompat.getColor(this@BookingHistory, textColor))
-            if (appointment.message.isNotEmpty()) {
-                holder.messageContainer?.visibility = View.VISIBLE
-                holder.messageText.visibility = View.VISIBLE
-                holder.messageText.text = appointment.message
-            } else {
-                holder.messageContainer?.visibility = View.GONE
-                holder.messageText.visibility = View.GONE
-            }
-            holder.actionButtonsContainer?.visibility = if (appointment.status.lowercase() == "pending"
-                || appointment.status.lowercase() == "confirmed") View.VISIBLE else View.GONE
-            if (appointment.status.lowercase() == "pending" || appointment.status.lowercase() == "confirmed") {
-                holder.cancelButtonContainer.visibility = View.VISIBLE
-                holder.cancelButton.setOnClickListener {
-                    onCancelClicked(appointment)
-                }
-            } else {
-                holder.cancelButtonContainer.visibility = View.GONE
-            }
-            if (appointment.status.lowercase() == "cancelled" && appointment.cancellationReason?.isNotEmpty() == true) {
-                holder.cancelReasonContainer?.visibility = View.VISIBLE
-                holder.cancelReasonText?.text = appointment.cancellationReason
-            } else {
-                holder.cancelReasonContainer?.visibility = View.GONE
-            }
 
-            holder.bookingTimestamp?.let { timestampView ->
-                val timestamp = if (appointment.createdAt > 0) {
-                    val dateFormat = SimpleDateFormat("MMM dd, yyyy 'at' h:mm a", Locale.getDefault())
-                    "Booked on ${dateFormat.format(Date(appointment.createdAt))}"
-                } else {
-                    "Recently booked"
-                }
-                timestampView.text = timestamp
+            // Card click listener
+            holder.cardContainer.setOnClickListener {
+                onCardClicked(appointment)
             }
-
-            holder.timeRemaining?.let { timeRemainingView ->
-                val daysLeft = getDaysLeft(appointment.date)
-
-                timeRemainingView.visibility = View.VISIBLE
-                timeRemainingView.text = when {
-                    daysLeft > 1 -> "$daysLeft days left"
-                    daysLeft == 1L -> "Tomorrow"
-                    daysLeft == 0L -> "Tomorrow"
-                    daysLeft < 0 -> "Expired"
-                    else -> ""
-                }
-            }
-
-
         }
+
         override fun getItemCount(): Int = appointments.size
-
-        private fun getDaysLeft(dateString: String): Long {
-            return try {
-                val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH)
-                val appointmentDate = sdf.parse(dateString)
-
-                val calAppointment = Calendar.getInstance().apply {
-                    time = appointmentDate!!
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-
-                val calToday = Calendar.getInstance().apply {
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-
-                val diff = calAppointment.timeInMillis - calToday.timeInMillis
-                diff / (1000 * 60 * 60 * 24)
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                -999L
-            }
-        }
-
     }
 
     private fun autoDeclineExpiredPendingAppointments() {
@@ -590,14 +614,12 @@ class BookingHistory : AppCompatActivity() {
                             val appointmentDateTime = dateFormat.parse("$dateStr $timeStr") ?: continue
 
                             if (appointmentDateTime.before(Date())) {
-                                // Update status to declined
                                 val bookingId = bookingSnapshot.child("bookingId").getValue(String::class.java) ?: continue
                                 val updates = mapOf<String, Any>(
                                     "status" to "declined",
                                     "autoDeclinedTimestamp" to System.currentTimeMillis()
                                 )
 
-                                // Update all relevant paths
                                 val clinicName = bookingSnapshot.child("clinicName").getValue(String::class.java) ?: ""
                                 val userEmail = currentUser.email?.replace(".", ",") ?: ""
 
@@ -637,5 +659,4 @@ class BookingHistory : AppCompatActivity() {
             }
         })
     }
-
 }

@@ -78,6 +78,7 @@ class BookingApprovalRecords : AppCompatActivity() {
             refreshCurrentView()
         }
     }
+    
 
 
     private fun updateDateDisplay() {

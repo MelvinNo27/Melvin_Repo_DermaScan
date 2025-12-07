@@ -190,7 +190,7 @@
 
     </LinearLayout>
 
-    <!-- Enhanced SwipeRefreshLayout for pull-to-refresh functionality -->
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
