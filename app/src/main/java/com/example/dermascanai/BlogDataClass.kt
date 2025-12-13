@@ -1,3 +1,4 @@
+
 package com.example.dermascanai
 
 data class BlogPost(
@@ -6,15 +7,14 @@ data class BlogPost(
     var fullName: String = "",
     var profilePicBase64: String = "",
     var content: String = "",
-    var postImageBase64: String? = null,
+    val imageUrl: String? = null,         // replace postImageBase64
     var timestamp: Long = 0L,
     var likeCount: Int = 0,
     var commentCount: Int = 0,
     var likes: MutableMap<String, Boolean> = mutableMapOf(),
-    val clinicName: String? = null,
-    val clinicAddress: String? = null,
-    val clinicContact: String? = null,
-    var comments: MutableMap<String, Comment> = mutableMapOf()
+    var clinicName: String = "",
+    var clinicAddress: String = "",
+    var clinicContact: String = ""
 )
 
 data class Comment(

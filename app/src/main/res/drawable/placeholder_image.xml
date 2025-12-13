@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#F0F2F5" />
+        </shape>
+    </item>
+
+    <!-- Image Icon -->
+    <item
+        android:width="64dp"
+        android:height="64dp"
+        android:gravity="center">
+        <shape android:shape="rectangle">
+            <solid android:color="#C4C4C4" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Mountains Icon (Simple Representation) -->
+    <item
+        android:width="64dp"
+        android:height="64dp"
+        android:gravity="center">
+        <layer-list>
+            <!-- Left Mountain -->
+            <item
+                android:top="24dp"
+                android:left="8dp"
+                android:right="28dp"
+                android:bottom="12dp">
+                <rotate
+                    android:fromDegrees="45"
+                    android:pivotX="50%"
+                    android:pivotY="50%">
+                    <shape android:shape="rectangle">
+                        <solid android:color="#909090" />
+                    </shape>
+                </rotate>
+            </item>
+
+            <!-- Right Mountain -->
+            <item
+                android:top="20dp"
+                android:left="28dp"
+                android:right="8dp"
+                android:bottom="12dp">
+                <rotate
+                    android:fromDegrees="45"
+                    android:pivotX="50%"
+                    android:pivotY="50%">
+                    <shape android:shape="rectangle">
+                        <solid android:color="#707070" />
+                    </shape>
+                </rotate>
+            </item>
+
+            <!-- Sun/Moon Circle -->
+            <item
+                android:top="16dp"
+                android:left="12dp"
+                android:right="44dp"
+                android:bottom="40dp">
+                <shape android:shape="oval">
+                    <solid android:color="#909090" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+
+</layer-list>
